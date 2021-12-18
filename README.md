@@ -1,0 +1,2 @@
+# AndroidTestAssistTool
+辅助Android apk测试抓取log及循环录制最近操作视频的功能
