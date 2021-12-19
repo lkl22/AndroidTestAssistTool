@@ -9,5 +9,5 @@ dependencyResolutionManagement {
 rootProject.name = "AndroidTestAssistTool"
 include ':app'
 
-include ':YuvJNI'
-project(':YuvJNI').projectDir = new File('libs/YuvJNI')
+include ':libs:YuvJNI'
+include ':libs:FrameDataCacheJNI'
