@@ -14,7 +14,6 @@ object FileUtils {
 
     private val ROOT_DIR = "Android/data/" + context.packageName
     private const val DOWNLOAD_DIR = "download"
-    private const val AD_DIR = "ad"
     private const val CACHE_DIR = "cache"
     private const val BITMAP_DIR = "cache/bitmap"
     private const val VIDEO_DIR = "cache/video"
@@ -52,13 +51,6 @@ object FileUtils {
     @JvmStatic
     val downloadDir: String?
         get() = getDiskCacheDir(DOWNLOAD_DIR)
-
-    /**
-     * 获取广告下载目录，如果应用重新安装了，需要重新下载广告
-     */
-    @JvmStatic
-    val adDir: String?
-        get() = getDiskCacheDir(AD_DIR)
 
     /**
      * 获取缓存目录
