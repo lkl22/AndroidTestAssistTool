@@ -61,7 +61,7 @@ static unsigned char *s_pCurPos = nullptr;
 static unsigned char *s_pFreePos = nullptr; //当前释放的位置
 
 //默认分配大小
-#define MAX_DATA_BUF      10 * 1024 * 1024  // 10M
+#define MAX_DATA_BUF      30 * 1024 * 1024  // 30M
 
 class WFirstRWLock {
 public:

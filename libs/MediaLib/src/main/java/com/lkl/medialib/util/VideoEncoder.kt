@@ -161,19 +161,11 @@ class VideoEncoder : Runnable {
     }
 
     private fun getInputBuffer(index: Int): ByteBuffer? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mEncoder!!.getInputBuffer(index)
-        } else {
-            mEncoder!!.inputBuffers[index]
-        }
+        return mEncoder?.getInputBuffer(index)
     }
 
     private fun getOutputBuffer(index: Int): ByteBuffer? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mEncoder!!.getOutputBuffer(index)
-        } else {
-            mEncoder!!.outputBuffers[index]
-        }
+        return mEncoder?.getOutputBuffer(index)
     }
 
     //TODO 定时调用，如果没有新数据，就用上一个数据
@@ -189,8 +181,8 @@ class VideoEncoder : Runnable {
 //            }
             val buffer = getInputBuffer(index)
             //            Log.d(TAG, "data length:" + data.length + " ByteBuffer:" + buffer.capacity() + " yuv data length:" + yuv.length);
-            buffer!!.clear()
-            buffer.put(data)
+            buffer?.clear()
+            buffer?.put(data)
             mEncoder!!.queueInputBuffer(index, 0, data.size, timeStep * 1000, 0)
         }
         drainEncoder(false)
@@ -199,7 +191,7 @@ class VideoEncoder : Runnable {
     lateinit var yuv: ByteArray
 
     fun drainEncoder(endOfStream: Boolean) {
-        val TIMEOUT_USEC = 10000
+        val TIMEOUT_USEC = 10000L
         d(TAG, "drainEncoder($endOfStream)")
         if (endOfStream) {
             d(TAG, "sending EOS to encoder")
@@ -208,7 +200,7 @@ class VideoEncoder : Runnable {
         }
         var encoderOutputBuffers = mEncoder!!.outputBuffers
         while (true) {
-            val encoderStatus = mEncoder!!.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC.toLong())
+            val encoderStatus = mEncoder!!.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC)
             if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 // no output available yet
                 if (!endOfStream) {

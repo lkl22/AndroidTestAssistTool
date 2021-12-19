@@ -9,7 +9,7 @@ extern "C" {
 #include "logger.h"
 #include "FrameDataCache.h"
 
-#define DATA_CACHE_UTILS_JAVA "com/lkl/framedatacachejni/util/VideoDataCacheUtils"
+#define DATA_CACHE_UTILS_JAVA "com/lkl/framedatacachejni/FrameDataCacheUtils"
 
 JNIEXPORT void JNICALL
 initCache(JNIEnv

@@ -33,11 +33,11 @@ class VideoMuxerCore(
         private const val TAG = "VideoMuxerCore"
 
         // 录制的MP4视频文件的时间总长度 单位 s
-        private const val MP4_TOTAL_TIME = 20
+        private const val MP4_TOTAL_TIME = 60
         private var mTrackIndex = -1
 
         // 帧率
-        private var mFrameRate = 25
+        private var mFrameRate = 20
     }
 
     /**

@@ -49,6 +49,15 @@ import java.util.*
  * on one thread, and drain the output on a different thread.
  */
 class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
+    companion object {
+        private const val TAG = "VideoEncoderCore"
+
+        // TODO: these ought to be configurable as well
+        private val MIME_TYPE = VideoConfig.MIME // H.264 Advanced Video Coding
+        private val IFRAME_INTERVAL = VideoConfig.FRAME_INTERVAL // 1 seconds between I-frames
+        var mMediaFormat: MediaFormat? = null
+    }
+
     private var mWidth = 0
     private var mHeight = 0
 
@@ -65,6 +74,13 @@ class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
     // 当前帧的时间戳 ms
     private var mNowTimeSptamp: Long = 0
     private val mFrameDataSemaphore = Object()
+
+    /**
+     * Configures encoder and muxer state, and prepares the input Surface.
+     */
+    init {
+        mFramePeriod = (1000 / mFrameRate).toLong()
+    }
 
     /**
      * 准备录制
@@ -350,21 +366,5 @@ class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
                 }
             }
         }
-    }
-
-    companion object {
-        private const val TAG = "VideoEncoderCore"
-
-        // TODO: these ought to be configurable as well
-        private val MIME_TYPE = VideoConfig.MIME // H.264 Advanced Video Coding
-        private val IFRAME_INTERVAL = VideoConfig.FRAME_INTERVAL // 1 seconds between I-frames
-        var mMediaFormat: MediaFormat? = null
-    }
-
-    /**
-     * Configures encoder and muxer state, and prepares the input Surface.
-     */
-    init {
-        mFramePeriod = (1000 / mFrameRate).toLong()
     }
 }
