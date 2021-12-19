@@ -19,5 +19,7 @@
             </intent-filter>
         </activity>
     </application>
-
+    <instrumentation
+        android:name=".MainInstrumentation"
+        android:targetPackage="com.lkl.androidtestassisttool" />
 </manifest>
