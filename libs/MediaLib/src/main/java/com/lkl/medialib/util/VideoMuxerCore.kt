@@ -9,6 +9,8 @@ import com.lkl.commonlib.util.DateUtils
 import com.lkl.commonlib.util.FileUtils
 import com.lkl.commonlib.util.LogUtils
 import com.lkl.framedatacachejni.FrameDataCacheUtils
+import com.lkl.medialib.constant.ScreenCapture
+import com.lkl.medialib.constant.VideoConfig
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -20,11 +22,10 @@ import java.util.*
  */
 class VideoMuxerCore(
     timeStamp: Long,
-    width: Int,
-    height: Int,
-    fps: Int,
+    fps: Int = VideoConfig.FPS,
     mediaFormat: MediaFormat?,
-    saveFilePath: String? = null
+    saveFilePath: String? = null,
+    totalTime: Int = MP4_TOTAL_TIME
 ) : Runnable {
     companion object {
         private const val TAG = "VideoMuxerCore"
@@ -50,6 +51,7 @@ class VideoMuxerCore(
 
     // video视频第一帧时间戳 (ms)，抽帧时作为起始点
     private var mFirstTimeStamp: Long = -1
+    private var mTotalTime: Int = MP4_TOTAL_TIME
     private var mFrameBuffer: ByteArray = ByteArray(0)
     private val mNextTimeStamp = LongArray(1)
     private val mSize = IntArray(1)
@@ -71,7 +73,8 @@ class VideoMuxerCore(
         mFrameRate = fps
         mFramePeriod = 1000 / fps
         mTimeStamp = timeStamp
-        mFirstTimeStamp = timeStamp - MP4_TOTAL_TIME / 2 * 1000
+        mFirstTimeStamp = timeStamp - totalTime * 1000
+        mTotalTime = totalTime
         // now that we have the Magic Goodies, start the muxer
         if (mediaFormat != null) {
             LogUtils.d(TAG, "Muxer init mediaFormat -> $mediaFormat")
@@ -110,34 +113,27 @@ class VideoMuxerCore(
             mFirstTimeStamp = mNextTimeStamp[0]
             setBufferInfo(MediaCodec.BUFFER_FLAG_KEY_FRAME, mFirstTimeStamp, mSize[0])
             LogUtils.d(
-                TAG, "get first IFrame data: size -> " + mSize[0] + " timestamp-> " + DateUtils.convertDateToString(
+                TAG,
+                "get first IFrame data: size -> " + mSize[0] + " timestamp-> " + DateUtils.convertDateToString(
                     DateUtils.DATE_TIME,
                     Date(mNextTimeStamp[0])
                 )
             );
             mMuxer.writeSampleData(mTrackIndex, frameData, mBufferInfo)
             var curTime: Long
-            for (frameIndex in 1 until 20 * mFrameRate) {
+            for (frameIndex in 1 until mTotalTime * mFrameRate) {
                 LogUtils.d(TAG, "$frameIndex  frame start")
                 curTime = mNextTimeStamp[0]
-                do {
-                    res = FrameDataCacheUtils.getNextFrameData(
-                        curTime,
-                        mNextTimeStamp,
-                        mFrameBuffer,
-                        mSize
-                    )
-                    if (res == 0) {
-                        // 返回0正常拿到数据
-                        break
-                    }
-                    try {
-                        // 2没有新数据，需循环等待
-                        Thread.sleep(10)
-                    } catch (e: InterruptedException) {
-                        LogUtils.w(TAG, e.message)
-                    }
-                } while (res == 2)
+                res = FrameDataCacheUtils.getNextFrameData(
+                    curTime,
+                    mNextTimeStamp,
+                    mFrameBuffer,
+                    mSize
+                )
+                if (res == 2) {
+                    LogUtils.d(TAG, "get cache data no more.")
+                    break
+                }
                 if (res == 1) {
                     LogUtils.d(TAG, "get cache data error.")
                     return
@@ -150,23 +146,26 @@ class VideoMuxerCore(
                     // 关键帧数据
                     setBufferInfo(MediaCodec.BUFFER_FLAG_KEY_FRAME, mNextTimeStamp[0], mSize[0])
 
-                    LogUtils.d(
-                        TAG, "get I frame data: size -> " + mSize[0] + "  timestamp -> " +
-                                DateUtils.convertDateToString(
-                                    DateUtils.DATE_TIME,
-                                    Date(mNextTimeStamp[0])
-                                )
-                    )
+                    if (ScreenCapture.PRINT_DEBUG_LOG) {
+                        LogUtils.d(
+                            TAG, "get I frame data: size -> " + mSize[0] + "  timestamp -> " +
+                                    DateUtils.convertDateToString(
+                                        DateUtils.DATE_TIME,
+                                        Date(mNextTimeStamp[0])
+                                    )
+                        )
+                    }
                 } else {
                     setBufferInfo(0, mNextTimeStamp[0], mSize[0])
-
-                    LogUtils.d(
-                        TAG, "get P frame data: size -> " + mSize[0] + "  timestamp -> " +
-                                DateUtils.convertDateToString(
-                                    DateUtils.DATE_TIME,
-                                    Date(mNextTimeStamp[0])
-                                )
-                    )
+                    if (ScreenCapture.PRINT_DEBUG_LOG) {
+                        LogUtils.d(
+                            TAG, "get P frame data: size -> " + mSize[0] + "  timestamp -> " +
+                                    DateUtils.convertDateToString(
+                                        DateUtils.DATE_TIME,
+                                        Date(mNextTimeStamp[0])
+                                    )
+                        )
+                    }
                 }
                 mMuxer.writeSampleData(mTrackIndex, frameData, mBufferInfo)
             }

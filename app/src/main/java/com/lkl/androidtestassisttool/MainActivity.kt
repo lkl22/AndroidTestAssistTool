@@ -1,18 +1,22 @@
 package com.lkl.androidtestassisttool
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.EditText
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.lkl.commonlib.BaseApplication
 import com.lkl.commonlib.util.BitmapUtils
 import com.lkl.commonlib.util.DateUtils
 import com.lkl.commonlib.util.DisplayUtils
 import com.lkl.commonlib.util.FileUtils
+import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.constant.VideoConfig
 import com.lkl.medialib.manager.ScreenCaptureManager
 import com.lkl.medialib.util.ScreenRecordService
 import com.lkl.medialib.util.VideoMuxerCore
+import com.lkl.medialib.service.ScreenCaptureService
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -22,10 +26,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var tipEt: EditText? = null
-
-    private var mediaRecord: ScreenRecordService? = null
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +42,14 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == SCREEN_CAPTURE_REQUEST_CODE) {
             data?.apply {
-                ScreenCaptureManager.instance.startRecord(resultCode, this)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val service = Intent(this@MainActivity, ScreenCaptureService::class.java)
+                    service.putExtra(ScreenCapture.KEY_RESULT_CODE, resultCode)
+                    service.putExtra(ScreenCapture.KEY_DATA, data)
+                    startForegroundService(service)
+                } else {
+                    ScreenCaptureManager.instance.startRecord(resultCode, this)
+                }
             }
         }
     }
@@ -50,12 +57,13 @@ class MainActivity : AppCompatActivity() {
     fun startEncode(view: android.view.View) {}
 
     fun startMuxer(view: android.view.View) {
-        val displayMetrics = DisplayUtils.getDisplayMetrics(BaseApplication.context)
-        val fileName = FileUtils.videoDir + DateUtils.nowTime.replace(" ", "_") + BitmapUtils.VIDEO_FILE_EXT
+        val fileName = FileUtils.videoDir + DateUtils.nowTime.replace(" ", "_") +
+                BitmapUtils.VIDEO_FILE_EXT
         Thread(
             VideoMuxerCore(
-                System.currentTimeMillis(), displayMetrics.widthPixels, displayMetrics.heightPixels,
-                VideoConfig.FPS, ScreenRecordService.sMediaFormat,
+                System.currentTimeMillis(),
+                VideoConfig.FPS,
+                ScreenRecordService.sMediaFormat,
                 fileName
             ), "Video Muxer Thread"
         ).start()

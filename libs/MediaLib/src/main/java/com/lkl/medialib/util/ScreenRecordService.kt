@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.Surface
 import com.lkl.commonlib.util.LogUtils
 import com.lkl.framedatacachejni.FrameDataCacheUtils
+import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.constant.VideoConfig
 import java.io.IOException
 import java.lang.RuntimeException
@@ -31,8 +32,8 @@ class ScreenRecordService(
         private const val MIME_TYPE = "video/avc" // H.264 Advanced
 
         // Video Coding
-        private val FRAME_RATE = VideoConfig.FPS // 20 fps
-        private const val IFRAME_INTERVAL = VideoConfig.FRAME_INTERVAL // 1 seconds between
+        private val FRAME_RATE = VideoConfig.FPS
+        private const val IFRAME_INTERVAL = VideoConfig.FRAME_INTERVAL
 
         // I-frames
         private const val TIMEOUT_US = 10000L
@@ -74,13 +75,11 @@ class ScreenRecordService(
     private fun recordVirtualDisplay() {
         while (!mQuit.get()) {
             val index = mEncoder!!.dequeueOutputBuffer(mBufferInfo, TIMEOUT_US)
-            //      Log.i(TAG, "dequeue output buffer index=" + index);
             if (index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // 后续输出格式变化
                 sMediaFormat = mEncoder?.outputFormat
             } else if (index == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 // 请求超时
-//          Log.d(TAG, "retrieving buffers time out!");
                 try {
                     // wait 10ms
                     sleep(10)
@@ -106,9 +105,11 @@ class ScreenRecordService(
         if (mBufferInfo.size == 0) {
             Log.d(TAG, "info.size == 0, drop it.")
             encodedData = null
-        } else {
-//      Log.d(TAG, "got buffer, info: size=" + mBufferInfo.size + ", presentationTimeUs="
-//          + mBufferInfo.presentationTimeUs + ", offset=" + mBufferInfo.offset);
+        } else if (ScreenCapture.PRINT_DEBUG_LOG) {
+            Log.d(
+                TAG, "got buffer, info: size=${mBufferInfo.size}, presentationTimeUs="
+                        + "${mBufferInfo.presentationTimeUs}, offset=${mBufferInfo.offset}"
+            )
         }
         if (encodedData != null) {
             // adjust the ByteBuffer values to match BufferInfo (not needed?)
@@ -126,10 +127,12 @@ class ScreenRecordService(
                 data, mBufferInfo.size
             )
 
-            LogUtils.d(
-                TAG, "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
-                        mBufferInfo.presentationTimeUs
-            )
+            if (ScreenCapture.PRINT_DEBUG_LOG) {
+                LogUtils.d(
+                    TAG,
+                    "sent ${mBufferInfo.size} bytes to cache, ts=${mBufferInfo.presentationTimeUs}"
+                )
+            }
         }
     }
 

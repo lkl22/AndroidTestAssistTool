@@ -60,6 +60,8 @@ static KEY_FRAME_TS_VECTOR sKeyFrameTSVec;
 static unsigned char *s_pCurPos = nullptr;
 static unsigned char *s_pFreePos = nullptr; //当前释放的位置
 
+static bool printDebugLog = false;
+
 //默认分配大小
 #define MAX_DATA_BUF      30 * 1024 * 1024  // 30M
 
@@ -182,8 +184,10 @@ void UnInit() {
 }
 
 void addFrame(int64 timestamp, bool isKeyFrame, unsigned char *puf, int nLen) {
-    LOGI("data cache add frame start: timestamp -> %lld isKeyFrame -> %d  length -> %d", timestamp,
-         isKeyFrame, nLen);
+    if (printDebugLog) {
+        LOGI("data cache add frame start: timestamp -> %lld isKeyFrame -> %d  length -> %d", timestamp,
+             isKeyFrame, nLen);
+    }
     if (sFrameIndexMap.size() > 0 && sKeyFrameTSVec.size() > 0
         && sFrameIndexMap.begin()->first > *sKeyFrameTSVec.begin()) {
         LOGI("*****************************begin sFrameIndexMap.begin()->first > *sKeyFrameTSVec.begin()");
