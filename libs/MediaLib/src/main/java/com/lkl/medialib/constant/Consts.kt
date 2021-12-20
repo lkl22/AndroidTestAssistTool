@@ -20,12 +20,10 @@ object VideoConfig {
     /**
      * 录制视频时的比特率
      */
-    @JvmField
-    val BIT_RATE = 400000
+    const val BIT_RATE = 800000
 
     /**
      * 关键帧时间间隔 s
      */
-    @JvmField
-    val FRAME_INTERVAL = 1
+    const val FRAME_INTERVAL = 1
 }

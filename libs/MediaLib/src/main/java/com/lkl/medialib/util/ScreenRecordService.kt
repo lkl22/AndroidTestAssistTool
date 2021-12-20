@@ -1,7 +1,6 @@
 package com.lkl.medialib.util
 
 import android.media.projection.MediaProjection
-import com.lkl.medialib.util.ScreenRecordService
 import android.media.MediaCodec
 import android.media.MediaMuxer
 import android.hardware.display.VirtualDisplay
@@ -11,18 +10,19 @@ import kotlin.Throws
 import android.media.MediaCodecInfo
 import android.util.Log
 import android.view.Surface
+import com.lkl.commonlib.util.LogUtils
 import com.lkl.framedatacachejni.FrameDataCacheUtils
+import com.lkl.medialib.constant.VideoConfig
 import java.io.IOException
 import java.lang.RuntimeException
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ScreenRecordService(
-    private val mWidth: Int,
-    private val mHeight: Int,
-    private val mBitRate: Int,
-    private val mDpi: Int,
-    private val mMediaProjection: MediaProjection?,
-    private val mDstPath: String
+    private val width: Int,
+    private val height: Int,
+    private val dpi: Int,
+    private val bitRate: Int = VideoConfig.BIT_RATE,
+    private val mediaProjection: MediaProjection?
 ) : Thread(TAG) {
     companion object {
         private const val TAG = "ScreenRecordService"
@@ -31,22 +31,21 @@ class ScreenRecordService(
         private const val MIME_TYPE = "video/avc" // H.264 Advanced
 
         // Video Coding
-        private const val FRAME_RATE = 20 // 20 fps
-        private const val IFRAME_INTERVAL = 2 // 2 seconds between
+        private val FRAME_RATE = VideoConfig.FPS // 20 fps
+        private const val IFRAME_INTERVAL = VideoConfig.FRAME_INTERVAL // 1 seconds between
 
         // I-frames
-        private const val TIMEOUT_US = 10000
+        private const val TIMEOUT_US = 10000L
+
+        var sMediaFormat: MediaFormat? = null
     }
 
     init {
-        FrameDataCacheUtils.initCache(FRAME_RATE, mWidth, mHeight, 0)
+        FrameDataCacheUtils.initCache(FRAME_RATE, width, height, 0)
     }
 
     private var mEncoder: MediaCodec? = null
     private var mSurface: Surface? = null
-    private var mMuxer: MediaMuxer? = null
-    private var mMuxerStarted = false
-    private var mVideoTrackIndex = -1
     private val mQuit = AtomicBoolean(false)
     private val mBufferInfo = MediaCodec.BufferInfo()
     private var mVirtualDisplay: VirtualDisplay? = null
@@ -60,14 +59,9 @@ class ScreenRecordService(
 
     override fun run() {
         try {
-            mMuxer = try {
-                prepareEncoder()
-                MediaMuxer(mDstPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
-            mVirtualDisplay = mMediaProjection!!.createVirtualDisplay(
-                TAG + "-display", mWidth, mHeight, mDpi,
+            prepareEncoder()
+            mVirtualDisplay = mediaProjection!!.createVirtualDisplay(
+                "$TAG-display", width, height, dpi,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC, mSurface, null, null
             )
             Log.d(TAG, "created virtual display: $mVirtualDisplay")
@@ -79,11 +73,11 @@ class ScreenRecordService(
 
     private fun recordVirtualDisplay() {
         while (!mQuit.get()) {
-            val index = mEncoder!!.dequeueOutputBuffer(mBufferInfo, TIMEOUT_US.toLong())
+            val index = mEncoder!!.dequeueOutputBuffer(mBufferInfo, TIMEOUT_US)
             //      Log.i(TAG, "dequeue output buffer index=" + index);
             if (index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // 后续输出格式变化
-                resetOutputFormat()
+                sMediaFormat = mEncoder?.outputFormat
             } else if (index == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 // 请求超时
 //          Log.d(TAG, "retrieving buffers time out!");
@@ -94,26 +88,18 @@ class ScreenRecordService(
                 }
             } else if (index >= 0) {
                 // 有效输出
-                check(mMuxerStarted) { "MediaMuxer dose not call addTrack(format) " }
                 encodeToVideoTrack(index)
-                mEncoder!!.releaseOutputBuffer(index, false)
+                mEncoder?.releaseOutputBuffer(index, false)
             }
         }
     }
 
-    /**
-     * 硬解码获取实时帧数据并写入mp4文件
-     *
-     * @param index
-     */
     private fun encodeToVideoTrack(index: Int) {
         // 获取到的实时帧视频数据
         var encodedData = mEncoder!!.getOutputBuffer(index)
         if (mBufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
             // The codec config data was pulled out and fed to the muxer
-            // when we got
-            // the INFO_OUTPUT_FORMAT_CHANGED status.
-            // Ignore it.
+            // when we got the INFO_OUTPUT_FORMAT_CHANGED status. Ignore it.
             Log.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG")
             mBufferInfo.size = 0
         }
@@ -125,29 +111,36 @@ class ScreenRecordService(
 //          + mBufferInfo.presentationTimeUs + ", offset=" + mBufferInfo.offset);
         }
         if (encodedData != null) {
-            mMuxer!!.writeSampleData(mVideoTrackIndex, encodedData, mBufferInfo)
-        }
-    }
+            // adjust the ByteBuffer values to match BufferInfo (not needed?)
+            encodedData.position(mBufferInfo.offset)
+            encodedData.limit(mBufferInfo.offset + mBufferInfo.size)
 
-    private fun resetOutputFormat() {
-        // should happen before receiving buffers, and should only happen
-        // once
-        check(!mMuxerStarted) { "output format already changed!" }
-        val newFormat = mEncoder!!.outputFormat
-        mVideoTrackIndex = mMuxer!!.addTrack(newFormat)
-        mMuxer!!.start()
-        mMuxerStarted = true
-        Log.i(TAG, "started media muxer, videoIndex=$mVideoTrackIndex")
+            // 取出编码好的H264数据
+            val data = ByteArray(mBufferInfo.size)
+            encodedData[data]
+
+            // 将编码好的H264数据存储到缓冲中
+            FrameDataCacheUtils.addFrameData(
+                System.currentTimeMillis(),
+                mBufferInfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME,
+                data, mBufferInfo.size
+            )
+
+            LogUtils.d(
+                TAG, "sent " + mBufferInfo.size + " bytes to muxer, ts=" +
+                        mBufferInfo.presentationTimeUs
+            )
+        }
     }
 
     @Throws(IOException::class)
     private fun prepareEncoder() {
-        val format = MediaFormat.createVideoFormat(MIME_TYPE, mWidth, mHeight)
+        val format = MediaFormat.createVideoFormat(MIME_TYPE, width, height)
         format.setInteger(
             MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
         )
-        format.setInteger(MediaFormat.KEY_BIT_RATE, mBitRate)
+        format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL)
         Log.d(TAG, "created video format: $format")
@@ -167,11 +160,6 @@ class ScreenRecordService(
         if (mVirtualDisplay != null) {
             mVirtualDisplay!!.release()
         }
-        mMediaProjection?.stop()
-        if (mMuxer != null) {
-            mMuxer!!.stop()
-            mMuxer!!.release()
-            mMuxer = null
-        }
+        mediaProjection?.stop()
     }
 }

@@ -13,9 +13,10 @@
         android:layout_marginTop="16dp"
         android:onClick="startEncode"
         android:text="start Encode"
+        android:visibility="gone"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hello" />
+        app:layout_constraintTop_toBottomOf="@id/tipEt" />
 
     <Button
         android:id="@+id/startMuxerBtn"
@@ -28,12 +29,13 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/startEncodeBtn" />
 
-    <TextView
-        android:id="@+id/hello"
+    <EditText
+        android:id="@+id/tipEt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="Hello World!"
+        android:gravity="center"
+        android:text="Hello!"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
