@@ -5,7 +5,7 @@
  * 动态注册
  */
 JNINativeMethod methods[] = {
-        {"initCache",         "(IIII)V",    (void *) initCache},
+        {"initCache",         "(III)V",     (void *) initCache},
         {"addFrameData",      "(JZ[BI)V",   (void *) addFrameData},
         {"getFirstFrameData", "(J[J[B[I)I", (jint *) getFirstFrameData},
         {"getNextFrameData",  "(J[J[B[I)I", (jint *) getNextFrameData}
@@ -52,8 +52,8 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
     env->UnregisterNatives(clazz);
 }
 
-void initCache(JNIEnv *env, jobject obj, jint fps, jint width, jint height, jint code) {
-    init(fps, width, height, code);
+void initCache(JNIEnv *env, jobject obj, jint fps, jint width, jint height) {
+    init(fps, width, height);
 }
 
 void addFrameData(JNIEnv *env, jobject obj, jlong timeSptamp, jboolean bKeyFrame, jbyteArray buf,

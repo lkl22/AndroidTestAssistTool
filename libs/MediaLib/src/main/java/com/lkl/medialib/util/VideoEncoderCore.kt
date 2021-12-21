@@ -112,7 +112,7 @@ class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
         mEncoder!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
 
         // 初始化H264数据缓冲区
-        FrameDataCacheUtils.initCache(mFrameRate, width, height, 0)
+        FrameDataCacheUtils.initCache(mFrameRate, width, height)
         mMediaFormat = mEncoder!!.outputFormat
     }
 

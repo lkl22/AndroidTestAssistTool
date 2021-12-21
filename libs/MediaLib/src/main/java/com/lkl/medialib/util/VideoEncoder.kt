@@ -105,7 +105,7 @@ class VideoEncoder : Runnable {
 //        MediaFormat mediaFormat = mEncoder.getOutputFormat();
         mMuxer = MediaMuxer("$mSavePath.mp4", MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
         //        mTrackIndex = mMuxer.addTrack(mediaFormat);
-        FrameDataCacheUtils.initCache(frameRate, width, height, 0)
+        FrameDataCacheUtils.initCache(frameRate, width, height)
     }
 
     /**

@@ -12,25 +12,21 @@ extern "C" {
 #define DATA_CACHE_UTILS_JAVA "com/lkl/framedatacachejni/FrameDataCacheUtils"
 
 JNIEXPORT void JNICALL
-initCache(JNIEnv
-*, jobject, jint, jint, jint, jint);
+initCache(JNIEnv *, jobject, jint, jint, jint);
 
 JNIEXPORT void JNICALL
-addFrameData(JNIEnv
-*, jobject, jlong, jboolean, jbyteArray, jint);
+addFrameData(JNIEnv *, jobject, jlong, jboolean, jbyteArray, jint);
 
 JNIEXPORT jint
-JNICALL getFirstFrameData(JNIEnv * , jobject, jlong, jlongArray, jbyteArray, jintArray);
+JNICALL getFirstFrameData(JNIEnv *, jobject, jlong, jlongArray, jbyteArray, jintArray);
 
 JNIEXPORT jint
-JNICALL getNextFrameData(JNIEnv * , jobject, jlong, jlongArray, jbyteArray, jintArray);
+JNICALL getNextFrameData(JNIEnv *, jobject, jlong, jlongArray, jbyteArray, jintArray);
 
 #ifdef __cplusplus
 }
 #endif
 
-void throw_java_exception(JNIEnv * env,
-const char *msg
-);
+void throw_java_exception(JNIEnv *env, const char *msg);
 
 #endif

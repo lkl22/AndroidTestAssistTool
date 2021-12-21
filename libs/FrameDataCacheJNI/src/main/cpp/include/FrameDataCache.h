@@ -15,9 +15,8 @@ extern "C" {
  * @param fps 帧率
  * @param width 宽度
  * @param height 高度
- * @param code 编码格式 0:H264 1:H265
  */
-void init(int fps, int width, int height, int code);
+void init(int fps, int width, int height);
 
 /**
  * 资源释放

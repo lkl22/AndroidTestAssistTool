@@ -14,9 +14,8 @@ public class FrameDataCacheUtils {
      * @param fps 帧率
      * @param width 视频宽度
      * @param height 视频高度
-     * @param code 编码格式 0:H264 1:H265
      */
-    public static native void initCache(int fps, int width, int height, int code);
+    public static native void initCache(int fps, int width, int height);
 
     /**
      * 添加新的一帧数据到缓存

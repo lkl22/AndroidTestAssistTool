@@ -42,7 +42,7 @@ class ScreenRecordService(
     }
 
     init {
-        FrameDataCacheUtils.initCache(FRAME_RATE, width, height, 0)
+        FrameDataCacheUtils.initCache(FRAME_RATE, width, height)
     }
 
     private var mEncoder: MediaCodec? = null

@@ -159,7 +159,7 @@ private:
 
 static WFirstRWLock s_Lock;
 
-void init(int fps, int width, int height, int code) {
+void init(int fps, int width, int height) {
     if (s_pMemBuf == nullptr) {
         s_pMemBuf = new unsigned char[MAX_DATA_BUF];
     }
@@ -168,7 +168,7 @@ void init(int fps, int width, int height, int code) {
     sFrameIndexMap.clear();
     sKeyFrameTSVec.clear();
     //s_mapBufTm.clear();
-    LOGI("data cache init: fps -> %d  width -> %d height -> %d code -> %d", fps, width, height, code);
+    LOGI("data cache init: fps -> %d  width -> %d height -> %d", fps, width, height);
 }
 
 void UnInit() {
