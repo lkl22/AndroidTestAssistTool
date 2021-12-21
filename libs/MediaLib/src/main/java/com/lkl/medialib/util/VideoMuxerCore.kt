@@ -4,10 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.text.TextUtils
-import com.lkl.commonlib.util.BitmapUtils
-import com.lkl.commonlib.util.DateUtils
-import com.lkl.commonlib.util.FileUtils
-import com.lkl.commonlib.util.LogUtils
+import com.lkl.commonlib.util.*
 import com.lkl.framedatacachejni.FrameDataCacheUtils
 import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.constant.VideoConfig
@@ -172,6 +169,7 @@ class VideoMuxerCore(
             mMuxer.stop()
             mMuxer.release()
             LogUtils.e(TAG, "Muxer stop")
+            ThreadUtils.runOnMainThread { ToastUtils.showLong("视频录制完成。") }
         }
     }
 
