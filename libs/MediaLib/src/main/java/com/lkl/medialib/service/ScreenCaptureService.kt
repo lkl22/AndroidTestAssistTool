@@ -1,17 +1,24 @@
 package com.lkl.medialib.service
 
-import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
-import android.os.Bundle
+import androidx.core.app.NotificationCompat
 import com.lkl.commonlib.util.LogUtils
+import com.lkl.medialib.R
 import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.manager.ScreenCaptureManager
 
 class ScreenCaptureService : Service() {
     companion object {
         const val TAG = "ScreenCaptureService"
+
+        private const val NOTIFICATION_CHANNEL_ID = "ScreenCaptureId"
+        private const val NOTIFICATION_CHANNEL_NAME = "ScreenCaptureName"
+        private const val NOTIFICATION_ID = 1000
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -30,30 +37,26 @@ class ScreenCaptureService : Service() {
     }
 
     private fun createNotificationChannel() {
-//        Notification.Builder builder = new Notification.Builder(this.getApplicationContext()); //获取一个Notification构造器
-//        Intent nfIntent = new Intent(this, MainActivity.class); //点击后跳转的界面，可以设置跳转数据
-//
-//        builder.setContentIntent(PendingIntent.getActivity(this, 0, nfIntent, 0)) // 设置PendingIntent
-//                .setLargeIcon(BitmapFactory.decodeResource(this.getResources(), R.mipmap.ic_launcher)) // 设置下拉列表中的图标(大图标)
-//                //.setContentTitle("SMI InstantView") // 设置下拉列表里的标题
-//                .setSmallIcon(R.mipmap.ic_launcher) // 设置状态栏内的小图标
-//                .setContentText("is running......") // 设置上下文内容
-//                .setWhen(System.currentTimeMillis()); // 设置该通知发生的时间
-//
-//        /*以下是对Android 8.0的适配*/
-//        //普通notification适配
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            builder.setChannelId("notification_id");
-//        }
-//        //前台服务notification适配
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-//            NotificationChannel channel = new NotificationChannel("notification_id", "notification_name", NotificationManager.IMPORTANCE_LOW);
-//            notificationManager.createNotificationChannel(channel);
-//        }
-//
-//        Notification notification = builder.build(); // 获取构建好的Notification
-//        notification.defaults = Notification.DEFAULT_SOUND; //设置为默认的声音
-//        startForeground(110, notification);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            if (notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
+                val channel = NotificationChannel(
+                    NOTIFICATION_CHANNEL_ID,
+                    NOTIFICATION_CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+                notificationManager.createNotificationChannel(channel)
+            }
+        }
+
+        val builder =
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID) //获取一个Notification构造器
+                .setContentTitle("ScreenCapture") // 设置下拉列表里的标题
+                .setSmallIcon(R.mipmap.ic_launcher) // 设置状态栏内的小图标
+                .setContentText("is running......") // 设置上下文内容
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setWhen(System.currentTimeMillis()) // 设置该通知发生的时间
+        LogUtils.d(TAG, "startForeground")
+        startForeground(NOTIFICATION_ID, builder.build())
     }
 }
