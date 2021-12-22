@@ -16,6 +16,21 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('AndroidTestAssistTool')
+            storePassword '123456'
+            keyAlias 'bank'
+            keyPassword '123456'
+        }
+        release {
+            storeFile file('AndroidTestAssistTool')
+            storePassword '123456'
+            keyAlias 'bank'
+            keyPassword '123456'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
