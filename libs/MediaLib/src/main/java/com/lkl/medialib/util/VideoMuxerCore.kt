@@ -118,8 +118,9 @@ class VideoMuxerCore(
             );
             mMuxer.writeSampleData(mTrackIndex, frameData, mBufferInfo)
             var curTime: Long
-            for (frameIndex in 1 until mTotalTime * mFrameRate) {
-                LogUtils.d(TAG, "$frameIndex  frame start")
+            var frameIndex = 1
+            while (true) {
+                LogUtils.d(TAG, "$frameIndex frame start")
                 curTime = mNextTimeStamp[0]
                 res = FrameDataCacheUtils.getNextFrameData(
                     curTime,
@@ -165,6 +166,12 @@ class VideoMuxerCore(
                     }
                 }
                 mMuxer.writeSampleData(mTrackIndex, frameData, mBufferInfo)
+
+                frameIndex += 1
+                if (mNextTimeStamp[0] > mTimeStamp) {
+                    LogUtils.e(TAG, "Time's up.")
+                    break
+                }
             }
             mMuxer.stop()
             mMuxer.release()
