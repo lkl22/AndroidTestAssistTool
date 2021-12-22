@@ -43,5 +43,5 @@ object VideoConfig {
     /**
      * 关键帧时间间隔 s
      */
-    const val FRAME_INTERVAL = 1
+    const val IFRAME_INTERVAL = 1
 }

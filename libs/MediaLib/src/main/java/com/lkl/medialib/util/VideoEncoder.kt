@@ -8,10 +8,7 @@ import kotlin.Throws
 import android.media.MediaFormat
 import android.media.MediaCodecInfo
 import com.lkl.framedatacachejni.FrameDataCacheUtils
-import android.os.Build
 import android.util.Log
-import com.lkl.commonlib.util.LogUtils
-import com.lkl.medialib.util.VideoEncoderCore
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -31,7 +28,7 @@ class VideoEncoder : Runnable {
     private var mime = VideoConfig.MIME //HEVC -> H265 AVC -> H264
     private var rate = VideoConfig.BIT_RATE
     private var frameRate = VideoConfig.FPS
-    private var frameInterval = VideoConfig.FRAME_INTERVAL
+    private var frameInterval = VideoConfig.IFRAME_INTERVAL
     private val fpsTime: Int = 1000 / frameRate
     private var mThread: Thread? = null
     private var mStartFlag = false

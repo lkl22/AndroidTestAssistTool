@@ -22,13 +22,9 @@ import com.lkl.commonlib.util.BitmapUtils.textAsBitmap
 import android.media.MediaCodec
 import kotlin.Throws
 import android.media.MediaFormat
-import com.lkl.medialib.util.VideoEncoderCore
 import android.media.MediaCodecInfo
 import com.lkl.medialib.constant.VideoConfig
-import com.lkl.commonlib.util.LogUtils
 import com.lkl.framedatacachejni.FrameDataCacheUtils
-import android.graphics.Bitmap
-import com.lkl.commonlib.util.BitmapUtils
 import com.lkl.commonlib.util.DateUtils
 import com.lkl.yuvjni.YuvUtils
 import java.io.IOException
@@ -54,7 +50,7 @@ class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
 
         // TODO: these ought to be configurable as well
         private val MIME_TYPE = VideoConfig.MIME // H.264 Advanced Video Coding
-        private val IFRAME_INTERVAL = VideoConfig.FRAME_INTERVAL // 1 seconds between I-frames
+        private val IFRAME_INTERVAL = VideoConfig.IFRAME_INTERVAL // 1 seconds between I-frames
         var mMediaFormat: MediaFormat? = null
     }
 

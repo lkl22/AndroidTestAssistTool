@@ -1,5 +1,9 @@
 package com.lkl.medialib.bean
 
+import android.media.MediaCodecInfo
+import android.media.MediaFormat
+import com.lkl.medialib.constant.VideoConfig
+
 /**
  * 媒体操作相关的实体类
  *
@@ -37,3 +41,14 @@ data class FrameData(var data: ByteArray, var timeStamp: Long) {
  * @param centerY 裁剪数据的中心点Y坐标
  */
 data class CutData(var frameData: FrameData, var centerX: Int, var centerY: Int)
+
+data class MediaFormatData(
+    var width: Int,
+    var height: Int,
+    var mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC, // H264
+    var bitRate: Int = VideoConfig.BIT_RATE,
+    var frameRate: Int = VideoConfig.FPS,
+    var iFrameInterval: Int = VideoConfig.IFRAME_INTERVAL,
+    var colorFormat: Int = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
+)
+

@@ -2,7 +2,6 @@ package com.lkl.medialib.util
 
 import android.media.projection.MediaProjection
 import android.media.MediaCodec
-import android.media.MediaMuxer
 import android.hardware.display.VirtualDisplay
 import android.hardware.display.DisplayManager
 import android.media.MediaFormat
@@ -15,7 +14,6 @@ import com.lkl.framedatacachejni.FrameDataCacheUtils
 import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.constant.VideoConfig
 import java.io.IOException
-import java.lang.RuntimeException
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ScreenRecordService(
@@ -33,7 +31,7 @@ class ScreenRecordService(
 
         // Video Coding
         private val FRAME_RATE = VideoConfig.FPS
-        private const val IFRAME_INTERVAL = VideoConfig.FRAME_INTERVAL
+        private const val IFRAME_INTERVAL = VideoConfig.IFRAME_INTERVAL
 
         // I-frames
         private const val TIMEOUT_US = 10000L
