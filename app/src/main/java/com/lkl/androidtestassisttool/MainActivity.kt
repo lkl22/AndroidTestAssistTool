@@ -14,7 +14,6 @@ import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.constant.VideoConfig
 import com.lkl.medialib.manager.ScreenCaptureManager
 import com.lkl.medialib.service.ScreenCaptureService
-import com.lkl.medialib.util.ScreenRecordService
 import com.lkl.medialib.util.VideoMuxerCore
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.AppSettingsDialog
@@ -121,7 +120,7 @@ class MainActivity : BaseActivity() {
             VideoMuxerCore(
                 System.currentTimeMillis(),
                 VideoConfig.FPS,
-                ScreenRecordService.sMediaFormat,
+                ScreenCaptureManager.instance.getMediaFormat(),
                 fileName
             ), "Video Muxer Thread"
         ).start()
