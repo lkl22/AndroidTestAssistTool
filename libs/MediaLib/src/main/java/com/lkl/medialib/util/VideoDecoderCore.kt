@@ -275,7 +275,7 @@ class VideoDecoderCore {
      */
     fun feedData(data: ByteArray?, timeSptamp: Long) {
 //        LogUtils.d(TAG, "new frame data coming " + timeSptamp);
-        mFrameDataQueue.add(FrameData(data!!, timeSptamp))
+        mFrameDataQueue.add(FrameData(data!!, timestamp = timeSptamp))
     }
 
     /**
@@ -377,7 +377,7 @@ class VideoDecoderCore {
                     val decodedData = ByteArray(mBufferInfo.size)
                     decodedOutputBuffer[decodedData]
                     mDecodedDataQueue.clear()
-                    mDecodedDataQueue.add(FrameData(decodedData, mBufferInfo.presentationTimeUs))
+                    mDecodedDataQueue.add(FrameData(decodedData, timestamp = mBufferInfo.presentationTimeUs))
                 }
                 mDecoder!!.releaseOutputBuffer(decoderStatus, false)
                 if (mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
@@ -398,7 +398,7 @@ class VideoDecoderCore {
 //            LogUtils.d(TAG, "Encodec start");
                 if (!mFrameDataQueue.isEmpty()) {
                     val data = mFrameDataQueue.poll()
-                    putDataToInputBuffer(data!!.data, data.timeStamp)
+                    putDataToInputBuffer(data!!.data, timeSptamp = data.timestamp)
                 }
                 try {
                     sleep(1)
