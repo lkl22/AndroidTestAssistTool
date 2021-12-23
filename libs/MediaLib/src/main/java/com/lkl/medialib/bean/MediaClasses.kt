@@ -42,7 +42,7 @@ data class FrameData(var data: ByteArray, var timeStamp: Long) {
  */
 data class CutData(var frameData: FrameData, var centerX: Int, var centerY: Int)
 
-data class MediaFormatData(
+data class MediaFormatParams(
     var width: Int,
     var height: Int,
     var mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC, // H264

@@ -1,4 +1,4 @@
-package com.lkl.framedatacachejni;
+package com.lkl.framedatacachejni
 
 /**
  * 视频帧数据缓存工具类
@@ -6,8 +6,7 @@ package com.lkl.framedatacachejni;
  * @author likunlun
  * @since 2021/12/19
  */
-public class FrameDataCacheUtils {
-
+object FrameDataCacheUtils {
     /**
      * 初始化缓存
      *
@@ -15,7 +14,7 @@ public class FrameDataCacheUtils {
      * @param width 视频宽度
      * @param height 视频高度
      */
-    public static native void initCache(int fps, int width, int height);
+    external fun initCache(fps: Int, width: Int, height: Int)
 
     /**
      * 添加新的一帧数据到缓存
@@ -23,9 +22,14 @@ public class FrameDataCacheUtils {
      * @param timestamp 时间戳 ms
      * @param isKeyFrame 是否关键帧
      * @param frameData 帧数据
-     * @param size 数据大小
+     * @param length 数据长度
      */
-    public static native void addFrameData(long timestamp, boolean isKeyFrame, byte[] frameData, int size);
+    external fun addFrameData(
+        timestamp: Long,
+        isKeyFrame: Boolean,
+        frameData: ByteArray,
+        length: Int
+    )
 
     /**
      * 通过时间戳从缓存区中获取最近的一个关键帧数据
@@ -33,10 +37,15 @@ public class FrameDataCacheUtils {
      * @param timestamp 传入的时间戳 ms
      * @param nextTimestamp 下一帧的时间戳 ms
      * @param frameData 帧数据
-     * @param size 数据长度
+     * @param length 数据长度
      * @return 0成功，非0失败
      */
-    public static native int getFirstFrameData(long timestamp, long[] nextTimestamp, byte[] frameData, int[] size);
+    external fun getFirstFrameData(
+        timestamp: Long,
+        nextTimestamp: LongArray,
+        frameData: ByteArray,
+        length: IntArray
+    ): Int
 
     /**
      * 通过时间戳从缓存区中获取下一帧数据
@@ -44,12 +53,19 @@ public class FrameDataCacheUtils {
      * @param curTimestamp 传入的时间戳 ms
      * @param nextTimestamp 下一帧的时间戳 ms
      * @param frameData 帧数据
-     * @param size 数据长度
+     * @param length 数据长度
+     * @param isKeyFrame 是否关键帧（I帧）true I帧
      * @return 0成功，非0失败
      */
-    public static native int getNextFrameData(long curTimestamp, long[] nextTimestamp, byte[] frameData, int[] size);
+    external fun getNextFrameData(
+        curTimestamp: Long,
+        nextTimestamp: LongArray,
+        frameData: ByteArray,
+        length: IntArray,
+        isKeyFrame: BooleanArray
+    ): Int
 
-    static {
-        System.loadLibrary("framedatacachejni");
+    init {
+        System.loadLibrary("framedatacachejni")
     }
 }

@@ -283,25 +283,26 @@ int getFirstFrame(int64 timestamp, int64 &nextTimestamp, unsigned char *&data, i
 }
 
 int getNextFrame(int64 curTimestamp, int64 &nextTimestamp, unsigned char *&data,
-                 int &nLen) {
+                 int &len, bool &isKeyFrame) {
     unique_readguard<WFirstRWLock> readLock(s_Lock);
     FRAME_INDEX_MAP_CONST_ITERATOR iterFrame = sFrameIndexMap.find(curTimestamp);
     if (iterFrame != sFrameIndexMap.end()) {
         ++iterFrame;
         if (iterFrame != sFrameIndexMap.end()) {
-            nLen = iterFrame->second->_nLen;
+            len = iterFrame->second->_nLen;
+            isKeyFrame = iterFrame->second->_isKeyFrame;
             nextTimestamp = iterFrame->first;
             data = iterFrame->second->_pBuf;
-            if (data + nLen > s_pMemBuf + MAX_DATA_BUF) {
+            if (data + len > s_pMemBuf + MAX_DATA_BUF) {
                 LOGE("data + nLen > s_pMemBuf + MAX_DATA_BUF ");
             }
             return 0;
         }
-        nLen = 0;
+        len = 0;
         data = nullptr;
         return 2;
     }
-    nLen = 0;
+    len = 0;
     data = nullptr;
     return 1;
 }

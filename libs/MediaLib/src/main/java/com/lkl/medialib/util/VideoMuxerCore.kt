@@ -52,6 +52,7 @@ class VideoMuxerCore(
     private var mFrameBuffer: ByteArray = ByteArray(0)
     private val mNextTimeStamp = LongArray(1)
     private val mSize = IntArray(1)
+    private val mIsKeyFrame = BooleanArray(1)
     private var mOutputFileName = ""
 
     init {
@@ -126,7 +127,8 @@ class VideoMuxerCore(
                     curTime,
                     mNextTimeStamp,
                     mFrameBuffer,
-                    mSize
+                    mSize,
+                    mIsKeyFrame
                 )
                 if (res == 2) {
                     LogUtils.d(TAG, "get cache data no more.")

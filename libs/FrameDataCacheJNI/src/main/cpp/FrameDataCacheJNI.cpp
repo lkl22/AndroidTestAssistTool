@@ -5,10 +5,10 @@
  * 动态注册
  */
 JNINativeMethod methods[] = {
-        {"initCache",         "(III)V",     (void *) initCache},
-        {"addFrameData",      "(JZ[BI)V",   (void *) addFrameData},
-        {"getFirstFrameData", "(J[J[B[I)I", (jint *) getFirstFrameData},
-        {"getNextFrameData",  "(J[J[B[I)I", (jint *) getNextFrameData}
+        {"initCache",         "(III)V",       (void *) initCache},
+        {"addFrameData",      "(JZ[BI)V",     (void *) addFrameData},
+        {"getFirstFrameData", "(J[J[B[I)I",   (jint *) getFirstFrameData},
+        {"getNextFrameData",  "(J[J[B[I[Z)I", (jint *) getNextFrameData}
 };
 
 /**
@@ -57,10 +57,10 @@ void initCache(JNIEnv *env, jobject obj, jint fps, jint width, jint height) {
 }
 
 void addFrameData(JNIEnv *env, jobject obj, jlong timeSptamp, jboolean bKeyFrame, jbyteArray buf,
-                  jint nLen) {
+                  jint len) {
     jbyte *frameBuffer = env->GetByteArrayElements(buf, 0);
 
-    addFrame(timeSptamp, bKeyFrame, (unsigned char *) frameBuffer, nLen);
+    addFrame(timeSptamp, bKeyFrame, (unsigned char *) frameBuffer, len);
 
     env->ReleaseByteArrayElements(buf, frameBuffer, 0);
 
@@ -68,54 +68,58 @@ void addFrameData(JNIEnv *env, jobject obj, jlong timeSptamp, jboolean bKeyFrame
 }
 
 jint getFirstFrameData(JNIEnv *env, jobject obj, jlong timeSptamp_, jlongArray nextTimestamp_,
-                       jbyteArray buf_, jintArray nLen_) {
+                       jbyteArray buf_, jintArray len_) {
     jlong *nextTimestamp = env->GetLongArrayElements(nextTimestamp_, 0);
     jbyte *frameBuffer = env->GetByteArrayElements(buf_, 0);
-    jint *nLen = env->GetIntArrayElements(nLen_, 0);
+    jint *len = env->GetIntArrayElements(len_, 0);
 
     int64 cNextTimestamp;
-    unsigned char *frameAddress;
+    unsigned char *frameData;
     int cLen;
-    jint res = getFirstFrame(timeSptamp_, cNextTimestamp, frameAddress, cLen);
+    jint res = getFirstFrame(timeSptamp_, cNextTimestamp, frameData, cLen);
     if (res != 0) {
         LOGE("getFirstFrame res failed %d", res);
         return res;
     }
     LOGI("getFirstFrame find success: cNextTimestamp -> %lld , size -> %d", cNextTimestamp, cLen);
-    memcpy(frameBuffer, frameAddress, cLen);
+    memcpy(frameBuffer, frameData, cLen);
     nextTimestamp[0] = cNextTimestamp;
-    nLen[0] = cLen;
+    len[0] = cLen;
 
     env->ReleaseLongArrayElements(nextTimestamp_, nextTimestamp, 0);
     env->ReleaseByteArrayElements(buf_, frameBuffer, 0);
-    env->ReleaseIntArrayElements(nLen_, nLen, 0);
+    env->ReleaseIntArrayElements(len_, len, 0);
 
     throw_java_exception(env, "get first frame Exception");
     return res;
 }
 
 jint getNextFrameData(JNIEnv *env, jobject obj, jlong curTimestamp_, jlongArray nextTimestamp_,
-                      jbyteArray buf_, jintArray nLen_) {
+                      jbyteArray buf_, jintArray len_, jbooleanArray isKeyFrame_) {
     jlong *nextTimestamp = env->GetLongArrayElements(nextTimestamp_, 0);
     jbyte *frameBuffer = env->GetByteArrayElements(buf_, 0);
-    jint *nLen = env->GetIntArrayElements(nLen_, 0);
+    jint *len = env->GetIntArrayElements(len_, 0);
+    jboolean *isKeyFrame = env->GetBooleanArrayElements(isKeyFrame_, 0);
 
     int64 cNextTimestamp;
-    unsigned char *frameAddress;
+    unsigned char *frameData;
     int cLen;
-    jint res = getNextFrame(curTimestamp_, cNextTimestamp, frameAddress, cLen);
+    bool cIsKeyFrame;
+    jint res = getNextFrame(curTimestamp_, cNextTimestamp, frameData, cLen, cIsKeyFrame);
 
     if (2 * 1024 * 1024 < cLen) {
         LOGI("alloc size < src length ");
     }
 
-    memcpy(frameBuffer, frameAddress, cLen);
+    memcpy(frameBuffer, frameData, cLen);
     nextTimestamp[0] = cNextTimestamp;
-    nLen[0] = cLen;
+    len[0] = cLen;
+    isKeyFrame[0] = cIsKeyFrame;
 
     env->ReleaseLongArrayElements(nextTimestamp_, nextTimestamp, 0);
     env->ReleaseByteArrayElements(buf_, frameBuffer, 0);
-    env->ReleaseIntArrayElements(nLen_, nLen, 0);
+    env->ReleaseIntArrayElements(len_, len, 0);
+    env->ReleaseBooleanArrayElements(isKeyFrame_, isKeyFrame, 0);
 
     throw_java_exception(env, "get next frame Exception");
     return res;

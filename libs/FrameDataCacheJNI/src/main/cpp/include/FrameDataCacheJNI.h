@@ -21,7 +21,7 @@ JNIEXPORT jint
 JNICALL getFirstFrameData(JNIEnv *, jobject, jlong, jlongArray, jbyteArray, jintArray);
 
 JNIEXPORT jint
-JNICALL getNextFrameData(JNIEnv *, jobject, jlong, jlongArray, jbyteArray, jintArray);
+JNICALL getNextFrameData(JNIEnv *, jobject, jlong, jlongArray, jbyteArray, jintArray, jbooleanArray);
 
 #ifdef __cplusplus
 }
