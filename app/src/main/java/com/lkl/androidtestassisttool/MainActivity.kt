@@ -11,10 +11,8 @@ import com.lkl.commonlib.util.DateUtils
 import com.lkl.commonlib.util.FileUtils
 import com.lkl.commonlib.util.LogUtils
 import com.lkl.medialib.constant.ScreenCapture
-import com.lkl.medialib.constant.VideoConfig
 import com.lkl.medialib.manager.ScreenCaptureManager
 import com.lkl.medialib.service.ScreenCaptureService
-import com.lkl.medialib.util.VideoMuxerCore
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
@@ -116,15 +114,8 @@ class MainActivity : BaseActivity() {
     fun startMuxer(view: android.view.View) {
         val fileName = FileUtils.videoDir + DateUtils.nowTime.replace(" ", "_") +
                 BitmapUtils.VIDEO_FILE_EXT
-        Thread(
-            VideoMuxerCore(
-                System.currentTimeMillis(),
-                VideoConfig.FPS,
-                ScreenCaptureManager.instance.getMediaFormat(),
-                fileName
-            ), "Video Muxer Thread"
-        ).start()
-
+        val curTime = System.currentTimeMillis()
+        ScreenCaptureManager.instance.startMuxer(fileName, curTime - 10 * 1000, curTime)
         tipEt?.setText(fileName)
     }
 }

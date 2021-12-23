@@ -7,13 +7,20 @@ import android.media.MediaFormat
 import android.media.projection.MediaProjectionManager
 import com.lkl.commonlib.BaseApplication
 import com.lkl.commonlib.util.DisplayUtils
+import com.lkl.commonlib.util.LogUtils
+import com.lkl.commonlib.util.ThreadUtils
+import com.lkl.commonlib.util.ToastUtils
 import com.lkl.framedatacachejni.FrameDataCacheUtils
+import com.lkl.framedatacachejni.constant.DataCacheCode
 import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.bean.MediaFormatParams
 import com.lkl.medialib.core.ScreenCaptureThread
+import com.lkl.medialib.core.VideoMuxerThread
 
 class ScreenCaptureManager {
     companion object {
+        private const val TAG = "ScreenCaptureManager"
+
         val instance: ScreenCaptureManager by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             ScreenCaptureManager()
         }
@@ -22,22 +29,29 @@ class ScreenCaptureManager {
     private val mProjectionManager: MediaProjectionManager = BaseApplication.context
         .getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
-    private val displayMetrics = DisplayUtils.getDisplayMetrics(BaseApplication.context)
+    private val mDisplayMetrics = DisplayUtils.getDisplayMetrics(BaseApplication.context)
 
-    private var screenCaptureThread: ScreenCaptureThread? = null
+    private var mScreenCaptureThread: ScreenCaptureThread? = null
+
+    private var mVideoMuxerThread: VideoMuxerThread? = null
+
+    private var mFrameBuffer: ByteArray = ByteArray(2 * 1024 * 1024)
+    private val mNextTimeStamp = LongArray(1)
+    private val mLength = IntArray(1)
+    private val mIsKeyFrame = BooleanArray(1)
 
     fun createScreenCaptureIntent(): Intent {
         return mProjectionManager.createScreenCaptureIntent()
     }
 
     fun startRecord(resultCode: Int, data: Intent) {
-        screenCaptureThread = ScreenCaptureThread(
+        mScreenCaptureThread = ScreenCaptureThread(
             MediaFormatParams(
-                displayMetrics.widthPixels,
-                displayMetrics.heightPixels,
+                mDisplayMetrics.widthPixels,
+                mDisplayMetrics.heightPixels,
                 colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
             ),
-            displayMetrics.densityDpi,
+            mDisplayMetrics.densityDpi,
             mProjectionManager.getMediaProjection(resultCode, data),
             object : ScreenCaptureThread.Callback {
                 override fun prePrepare(mediaFormatParams: MediaFormatParams) {
@@ -59,10 +73,60 @@ class ScreenCaptureManager {
                 }
             }
         )
-        screenCaptureThread?.start()
+        mScreenCaptureThread?.start()
     }
 
     fun getMediaFormat(): MediaFormat? {
-        return screenCaptureThread?.getMediaFormat()
+        return mScreenCaptureThread?.getMediaFormat()
+    }
+
+    fun startMuxer(fileName: String, startTime: Long, endTime: Long) {
+        val mediaFormat = getMediaFormat()
+        if (mediaFormat == null) {
+            LogUtils.e(TAG, "")
+            return
+        }
+        mVideoMuxerThread =
+            VideoMuxerThread(mediaFormat!!, fileName, object : VideoMuxerThread.Callback {
+                override fun getFirstIFrameData(): FrameData? {
+                    val res = FrameDataCacheUtils.getFirstFrameData(
+                        startTime,
+                        mNextTimeStamp,
+                        mFrameBuffer,
+                        mLength
+                    )
+                    if (res == DataCacheCode.RES_SUCCESS) {
+                        return FrameData(mFrameBuffer, mLength[0], mNextTimeStamp[0], true)
+                    }
+                    return null
+                }
+
+                override fun getNextFrameData(): FrameData? {
+                    val res = FrameDataCacheUtils.getNextFrameData(
+                        mNextTimeStamp[0],
+                        mNextTimeStamp,
+                        mFrameBuffer,
+                        mLength,
+                        mIsKeyFrame
+                    )
+                    if (res == DataCacheCode.RES_SUCCESS) {
+                        if (mNextTimeStamp[0] > endTime) {
+                            mVideoMuxerThread?.quit()
+                        }
+                        return FrameData(mFrameBuffer, mLength[0], mNextTimeStamp[0], mIsKeyFrame[0])
+                    } else if (res == DataCacheCode.RES_FAILED) {
+                        mVideoMuxerThread?.quit()
+                    }
+                    return null
+                }
+
+                override fun finished(fileName: String) {
+                    ThreadUtils.runOnMainThread{
+                        ToastUtils.showLong("视频录制完成。")
+                    }
+                }
+            })
+
+        mVideoMuxerThread?.start()
     }
 }

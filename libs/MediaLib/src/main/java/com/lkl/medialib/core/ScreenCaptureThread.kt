@@ -125,6 +125,7 @@ class ScreenCaptureThread(
     }
 
     override fun release() {
+        LogUtils.d(TAG, "release")
         mEncoder?.apply {
             stop()
             release()
