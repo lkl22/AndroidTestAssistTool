@@ -24,7 +24,6 @@ class MainActivity : BaseActivity() {
         const val SCREEN_CAPTURE_REQUEST_CODE = 1000
 
         private const val RC_WRITE_EXTERNAL_STORAGE_PERM = 120
-        private const val RC_RECORD_AUDIO_PERM = 121
     }
 
     private var tipEt: EditText? = null
@@ -41,23 +40,6 @@ class MainActivity : BaseActivity() {
     fun requestStoragePermission() {
         if (hasPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             // Have permission, do the thing!
-            requestRecordPermission()
-        } else {
-            // Ask for one permission
-            EasyPermissions.requestPermissions(
-                this,
-                getString(R.string.rationale_write_external_storage),
-                RC_WRITE_EXTERNAL_STORAGE_PERM,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-        }
-    }
-
-
-    @AfterPermissionGranted(RC_RECORD_AUDIO_PERM)
-    fun requestRecordPermission() {
-        if (hasPermissions(Manifest.permission.RECORD_AUDIO)) {
-            // Have permission, do the thing!
             startActivityForResult(
                 ScreenCaptureManager.instance.createScreenCaptureIntent(),
                 SCREEN_CAPTURE_REQUEST_CODE
@@ -66,9 +48,9 @@ class MainActivity : BaseActivity() {
             // Ask for one permission
             EasyPermissions.requestPermissions(
                 this,
-                getString(R.string.rationale_record_audio),
-                RC_RECORD_AUDIO_PERM,
-                Manifest.permission.RECORD_AUDIO
+                getString(R.string.rationale_write_external_storage),
+                RC_WRITE_EXTERNAL_STORAGE_PERM,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
         }
     }
