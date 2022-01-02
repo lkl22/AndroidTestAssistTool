@@ -16,6 +16,7 @@ import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.bean.MediaFormatParams
 import com.lkl.medialib.core.ScreenCaptureThread
 import com.lkl.medialib.core.VideoMuxerThread
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ScreenCaptureManager {
     companion object {
@@ -30,6 +31,11 @@ class ScreenCaptureManager {
         .getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
     private val mDisplayMetrics = DisplayUtils.getDisplayMetrics(BaseApplication.context)
+
+    /**
+     * 录屏环境是否已就绪
+     */
+    private var isEnvReady = AtomicBoolean(false)
 
     private var mScreenCaptureThread: ScreenCaptureThread? = null
 
@@ -60,6 +66,7 @@ class ScreenCaptureManager {
                         mediaFormatParams.width,
                         mediaFormatParams.height
                     )
+                    isEnvReady.set(true)
                 }
 
                 override fun putFrameData(frameData: FrameData) {
@@ -74,6 +81,15 @@ class ScreenCaptureManager {
             }
         )
         mScreenCaptureThread?.start()
+    }
+
+    /**
+     * 录屏环境是否已就绪
+     *
+     * @return true 环境已就绪
+     */
+    fun isEnvReady(): Boolean {
+        return isEnvReady.get()
     }
 
     fun getMediaFormat(): MediaFormat? {

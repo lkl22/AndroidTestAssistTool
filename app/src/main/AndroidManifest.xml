@@ -30,6 +30,13 @@
             </intent-filter>
             <meta-data android:name="android.view.im" android:resource="@xml/methods" />
         </service>
+
+        <receiver android:name=".receiver.OperationReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="OperationReceiver"/>
+            </intent-filter>
+        </receiver>
     </application>
     <instrumentation
         android:name=".MainInstrumentation"

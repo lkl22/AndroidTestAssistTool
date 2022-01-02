@@ -14,7 +14,7 @@ option|desc
 
 eg:
 
-> adb shell am instrument -e params testParams -w com.lkl.androidtestassisttool/MainInstrumentation
+> adb shell am instrument -e params testParams -w com.lkl.androidtestassisttool/.MainInstrumentation
 
 ## 参考文献
 
