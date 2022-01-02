@@ -41,6 +41,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     api 'pub.devrel:easypermissions:3.0.0'
+    api 'com.google.code.gson:gson:2.8.9'
 
     implementation(project(":libs:YuvJNI"))
 }
