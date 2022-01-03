@@ -1,5 +1,7 @@
 package com.lkl.medialib.constant
 
+import com.lkl.medialib.BuildConfig
+
 /**
  * 屏幕录制常量
  */
@@ -12,11 +14,20 @@ object ScreenCapture {
      * createScreenCaptureIntent 时回调的 data
      */
     const val KEY_DATA = "data"
+    /**
+     * 缓存大小
+     */
+    const val KEY_CACHE_SIZE = "cacheSize"
+
+    /**
+     * 默认缓存大小
+     */
+    const val DEFAULT_CACHE_SIZE = 30
 
     /**
      * 是否打印视频处理的debug log
      */
-    const val PRINT_DEBUG_LOG = true
+    val PRINT_DEBUG_LOG = BuildConfig.DEBUG
 }
 
 /**

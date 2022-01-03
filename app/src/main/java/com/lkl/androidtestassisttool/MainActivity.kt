@@ -6,10 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.EditText
 import com.lkl.commonlib.base.BaseActivity
-import com.lkl.commonlib.util.BitmapUtils
-import com.lkl.commonlib.util.DateUtils
-import com.lkl.commonlib.util.FileUtils
-import com.lkl.commonlib.util.LogUtils
+import com.lkl.commonlib.util.*
 import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.manager.ScreenCaptureManager
 import com.lkl.medialib.service.ScreenCaptureService
@@ -28,11 +25,14 @@ class MainActivity : BaseActivity() {
 
     private var tipEt: EditText? = null
 
+    private var cacheSize = ScreenCapture.DEFAULT_CACHE_SIZE
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tipEt = findViewById(R.id.tipEt)
-
+        val safeIntent = SafeIntent(intent)
+        cacheSize = safeIntent.getIntExtra(ScreenCapture.KEY_CACHE_SIZE, ScreenCapture.DEFAULT_CACHE_SIZE)
         requestStoragePermission()
     }
 
@@ -83,9 +83,10 @@ class MainActivity : BaseActivity() {
                     val service = Intent(this@MainActivity, ScreenCaptureService::class.java)
                     service.putExtra(ScreenCapture.KEY_RESULT_CODE, resultCode)
                     service.putExtra(ScreenCapture.KEY_DATA, data)
+                    service.putExtra(ScreenCapture.KEY_CACHE_SIZE, cacheSize)
                     startForegroundService(service)
                 } else {
-                    ScreenCaptureManager.instance.startRecord(resultCode, this)
+                    ScreenCaptureManager.instance.startRecord(resultCode, this, cacheSize)
                 }
             }
         }

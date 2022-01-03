@@ -26,6 +26,7 @@ import android.media.MediaCodecInfo
 import com.lkl.medialib.constant.VideoConfig
 import com.lkl.framedatacachejni.FrameDataCacheUtils
 import com.lkl.commonlib.util.DateUtils
+import com.lkl.medialib.BuildConfig
 import com.lkl.yuvjni.YuvUtils
 import java.io.IOException
 import java.lang.Exception
@@ -108,7 +109,7 @@ class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
         mEncoder!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
 
         // 初始化H264数据缓冲区
-        FrameDataCacheUtils.initCache(mFrameRate, width, height)
+        FrameDataCacheUtils.initCache(30, BuildConfig.DEBUG)
         mMediaFormat = mEncoder!!.outputFormat
     }
 

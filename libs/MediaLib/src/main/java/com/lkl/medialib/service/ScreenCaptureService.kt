@@ -28,9 +28,10 @@ class ScreenCaptureService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         createNotificationChannel()
         val resultCode = intent.getIntExtra(ScreenCapture.KEY_RESULT_CODE, -1)
+        val cacheSize = intent.getIntExtra(ScreenCapture.KEY_CACHE_SIZE, ScreenCapture.DEFAULT_CACHE_SIZE)
         val resultData = intent.getParcelableExtra<Intent>(ScreenCapture.KEY_DATA)
         resultData?.apply {
-            ScreenCaptureManager.instance.startRecord(resultCode, this)
+            ScreenCaptureManager.instance.startRecord(resultCode, this, cacheSize)
             LogUtils.e(TAG, "startRecord.")
         }
         return super.onStartCommand(intent, flags, startId)

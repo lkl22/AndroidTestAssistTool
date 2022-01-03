@@ -12,11 +12,10 @@ extern "C" {
 /**
  * 初始化缓存大小
  *
- * @param fps 帧率
- * @param width 宽度
- * @param height 高度
+ * @param cacheSize 缓存空间大小，单位 M
+ * @param isDebug 是否debug模式
  */
-void init(int fps, int width, int height);
+void init(int cacheSize, bool isDebug);
 
 /**
  * 资源释放

@@ -10,11 +10,10 @@ object FrameDataCacheUtils {
     /**
      * 初始化缓存
      *
-     * @param fps 帧率
-     * @param width 视频宽度
-     * @param height 视频高度
+     * @param cacheSize 缓存空间大小，单位 M
+     * @param isDebug 是否debug模式
      */
-    external fun initCache(fps: Int, width: Int, height: Int)
+    external fun initCache(cacheSize: Int, isDebug: Boolean)
 
     /**
      * 添加新的一帧数据到缓存

@@ -62,8 +62,8 @@ static unsigned char *s_pFreePos = nullptr; //当前释放的位置
 
 static bool printDebugLog = false;
 
-//默认分配大小
-#define MAX_DATA_BUF      30 * 1024 * 1024  // 30M
+// 默认分配大小
+static long sMaxDataBuf = 1; // 30M
 
 class WFirstRWLock {
 public:
@@ -159,16 +159,23 @@ private:
 
 static WFirstRWLock s_Lock;
 
-void init(int fps, int width, int height) {
-    if (s_pMemBuf == nullptr) {
-        s_pMemBuf = new unsigned char[MAX_DATA_BUF];
+void init(int cacheSize, bool isDebug) {
+    int finalSize = 30;
+    if (cacheSize > 0 && cacheSize < 100) {
+        // 限制缓存空间大小，不能超过100M
+        finalSize = cacheSize;
     }
+    sMaxDataBuf = finalSize * 1024 * 1024;
+    if (s_pMemBuf == nullptr) {
+        s_pMemBuf = new unsigned char[sMaxDataBuf];
+    }
+    printDebugLog = isDebug;
     s_pCurPos = s_pMemBuf;
-    s_pFreePos = s_pMemBuf + MAX_DATA_BUF - 1;
+    s_pFreePos = s_pMemBuf + sMaxDataBuf - 1;
     sFrameIndexMap.clear();
     sKeyFrameTSVec.clear();
     //s_mapBufTm.clear();
-    LOGI("data cache init: fps -> %d  width -> %d height -> %d", fps, width, height);
+    LOGI("data cache size: %dM", cacheSize);
 }
 
 void UnInit() {
@@ -193,7 +200,7 @@ void addFrame(int64 timestamp, bool isKeyFrame, unsigned char *puf, int nLen) {
         LOGI("*****************************begin sFrameIndexMap.begin()->first > *sKeyFrameTSVec.begin()");
     }
     unique_writeguard<WFirstRWLock> writeLock(s_Lock);
-    if ((s_pCurPos + nLen) > (s_pMemBuf + MAX_DATA_BUF)) {
+    if ((s_pCurPos + nLen) > (s_pMemBuf + sMaxDataBuf)) {
         LOGI("buffer have full, start erase data ");
         //当前要存储的空间不足,从头开始
         FRAME_INDEX_MAP_ITERATOR iterFrame = sFrameIndexMap.begin(), _endFrame = sFrameIndexMap.end();
@@ -293,8 +300,8 @@ int getNextFrame(int64 curTimestamp, int64 &nextTimestamp, unsigned char *&data,
             isKeyFrame = iterFrame->second->_isKeyFrame;
             nextTimestamp = iterFrame->first;
             data = iterFrame->second->_pBuf;
-            if (data + len > s_pMemBuf + MAX_DATA_BUF) {
-                LOGE("data + nLen > s_pMemBuf + MAX_DATA_BUF ");
+            if (data + len > s_pMemBuf + sMaxDataBuf) {
+                LOGE("data + nLen > s_pMemBuf + sMaxDataBuf ");
             }
             return 0;
         }

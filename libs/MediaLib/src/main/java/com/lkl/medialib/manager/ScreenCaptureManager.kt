@@ -12,6 +12,7 @@ import com.lkl.commonlib.util.ThreadUtils
 import com.lkl.commonlib.util.ToastUtils
 import com.lkl.framedatacachejni.FrameDataCacheUtils
 import com.lkl.framedatacachejni.constant.DataCacheCode
+import com.lkl.medialib.BuildConfig
 import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.bean.MediaFormatParams
 import com.lkl.medialib.core.ScreenCaptureThread
@@ -50,7 +51,7 @@ class ScreenCaptureManager {
         return mProjectionManager.createScreenCaptureIntent()
     }
 
-    fun startRecord(resultCode: Int, data: Intent) {
+    fun startRecord(resultCode: Int, data: Intent, cacheSize: Int) {
         mScreenCaptureThread = ScreenCaptureThread(
             MediaFormatParams(
                 mDisplayMetrics.widthPixels,
@@ -62,9 +63,7 @@ class ScreenCaptureManager {
             object : ScreenCaptureThread.Callback {
                 override fun prePrepare(mediaFormatParams: MediaFormatParams) {
                     FrameDataCacheUtils.initCache(
-                        mediaFormatParams.frameRate,
-                        mediaFormatParams.width,
-                        mediaFormatParams.height
+                        cacheSize, BuildConfig.DEBUG
                     )
                     isEnvReady.set(true)
                 }
