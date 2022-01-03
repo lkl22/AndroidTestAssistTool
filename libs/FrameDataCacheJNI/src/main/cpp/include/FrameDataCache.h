@@ -37,24 +37,24 @@ void addFrame(int64 timestamp, bool isKeyFrame, unsigned char *puf, int nLen);
  * 获取第一帧数据
  *
  * @param timestamp 时间戳
- * @param nextTimestamp 下一帧时间戳
+ * @param curTimestamp 当前帧时间戳
  * @param data 帧数据
  * @param nLen 数据长度
  * @return 查找状态0:找到 1:无效 2:等待
  */
-int getFirstFrame(int64 timestamp, int64 &nextTimestamp, unsigned char *&data, int &nLen);
+int getFirstFrame(int64 timestamp, int64 &curTimestamp, unsigned char *&data, int &nLen);
 
 /**
  * 返回当前curTimestamp的下一帧数据和index
  *
+ * @param preTimestamp 前一帧时间戳
  * @param curTimestamp 当前帧时间戳
- * @param nextTimestamp 下一帧时间戳
  * @param data 帧数据
  * @param len 数据长度
  * @param isKeyFrame 是否关键帧（I帧）
  * @return 返回查找状态0:找到 1:无效 2:等待
  */
-int getNextFrame(int64 curTimestamp, int64 &nextTimestamp, unsigned char *&data, int &len, bool &isKeyFrame);
+int getNextFrame(int64 preTimestamp, int64 &curTimestamp, unsigned char *&data, int &len, bool &isKeyFrame);
 
 #ifdef __cplusplus
 }

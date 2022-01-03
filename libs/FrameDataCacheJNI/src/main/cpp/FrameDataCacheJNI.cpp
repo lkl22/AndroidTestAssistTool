@@ -67,26 +67,26 @@ void addFrameData(JNIEnv *env, jobject obj, jlong timeSptamp, jboolean bKeyFrame
     throw_java_exception(env, "Add frame Exception");
 }
 
-jint getFirstFrameData(JNIEnv *env, jobject obj, jlong timeSptamp_, jlongArray nextTimestamp_,
+jint getFirstFrameData(JNIEnv *env, jobject obj, jlong timeSptamp_, jlongArray curTimestamp_,
                        jbyteArray buf_, jintArray len_) {
-    jlong *nextTimestamp = env->GetLongArrayElements(nextTimestamp_, 0);
+    jlong *curTimestamp = env->GetLongArrayElements(curTimestamp_, 0);
     jbyte *frameBuffer = env->GetByteArrayElements(buf_, 0);
     jint *len = env->GetIntArrayElements(len_, 0);
 
-    int64 cNextTimestamp;
+    int64 cCurTimestamp;
     unsigned char *frameData;
     int cLen;
-    jint res = getFirstFrame(timeSptamp_, cNextTimestamp, frameData, cLen);
+    jint res = getFirstFrame(timeSptamp_, cCurTimestamp, frameData, cLen);
     if (res != 0) {
         LOGE("getFirstFrame res failed %d", res);
         return res;
     }
-    LOGI("getFirstFrame find success: cNextTimestamp -> %lld , size -> %d", cNextTimestamp, cLen);
+    LOGI("getFirstFrame find success: cCurTimestamp -> %lld , size -> %d", cCurTimestamp, cLen);
     memcpy(frameBuffer, frameData, cLen);
-    nextTimestamp[0] = cNextTimestamp;
+    curTimestamp[0] = cCurTimestamp;
     len[0] = cLen;
 
-    env->ReleaseLongArrayElements(nextTimestamp_, nextTimestamp, 0);
+    env->ReleaseLongArrayElements(curTimestamp_, curTimestamp, 0);
     env->ReleaseByteArrayElements(buf_, frameBuffer, 0);
     env->ReleaseIntArrayElements(len_, len, 0);
 
@@ -94,29 +94,25 @@ jint getFirstFrameData(JNIEnv *env, jobject obj, jlong timeSptamp_, jlongArray n
     return res;
 }
 
-jint getNextFrameData(JNIEnv *env, jobject obj, jlong curTimestamp_, jlongArray nextTimestamp_,
+jint getNextFrameData(JNIEnv *env, jobject obj, jlong preTimestamp_, jlongArray curTimestamp_,
                       jbyteArray buf_, jintArray len_, jbooleanArray isKeyFrame_) {
-    jlong *nextTimestamp = env->GetLongArrayElements(nextTimestamp_, 0);
+    jlong *curTimestamp = env->GetLongArrayElements(curTimestamp_, 0);
     jbyte *frameBuffer = env->GetByteArrayElements(buf_, 0);
     jint *len = env->GetIntArrayElements(len_, 0);
     jboolean *isKeyFrame = env->GetBooleanArrayElements(isKeyFrame_, 0);
 
-    int64 cNextTimestamp;
+    int64 cCurTimestamp;
     unsigned char *frameData;
     int cLen;
     bool cIsKeyFrame;
-    jint res = getNextFrame(curTimestamp_, cNextTimestamp, frameData, cLen, cIsKeyFrame);
-
-    if (2 * 1024 * 1024 < cLen) {
-        LOGI("alloc size < src length ");
-    }
+    jint res = getNextFrame(preTimestamp_, cCurTimestamp, frameData, cLen, cIsKeyFrame);
 
     memcpy(frameBuffer, frameData, cLen);
-    nextTimestamp[0] = cNextTimestamp;
+    curTimestamp[0] = cCurTimestamp;
     len[0] = cLen;
     isKeyFrame[0] = cIsKeyFrame;
 
-    env->ReleaseLongArrayElements(nextTimestamp_, nextTimestamp, 0);
+    env->ReleaseLongArrayElements(curTimestamp_, curTimestamp, 0);
     env->ReleaseByteArrayElements(buf_, frameBuffer, 0);
     env->ReleaseIntArrayElements(len_, len, 0);
     env->ReleaseBooleanArrayElements(isKeyFrame_, isKeyFrame, 0);

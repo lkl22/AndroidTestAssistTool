@@ -43,7 +43,7 @@ class ScreenCaptureManager {
     private var mVideoMuxerThread: VideoMuxerThread? = null
 
     private var mFrameBuffer: ByteArray = ByteArray(2 * 1024 * 1024)
-    private val mNextTimeStamp = LongArray(1)
+    private val mCurTimeStamp = LongArray(1)
     private val mLength = IntArray(1)
     private val mIsKeyFrame = BooleanArray(1)
 
@@ -106,29 +106,29 @@ class ScreenCaptureManager {
                 override fun getFirstIFrameData(): FrameData? {
                     val res = FrameDataCacheUtils.getFirstFrameData(
                         startTime,
-                        mNextTimeStamp,
+                        mCurTimeStamp,
                         mFrameBuffer,
                         mLength
                     )
                     if (res == DataCacheCode.RES_SUCCESS) {
-                        return FrameData(mFrameBuffer, mLength[0], mNextTimeStamp[0], true)
+                        return FrameData(mFrameBuffer, mLength[0], mCurTimeStamp[0], true)
                     }
                     return null
                 }
 
                 override fun getNextFrameData(): FrameData? {
                     val res = FrameDataCacheUtils.getNextFrameData(
-                        mNextTimeStamp[0],
-                        mNextTimeStamp,
+                        mCurTimeStamp[0],
+                        mCurTimeStamp,
                         mFrameBuffer,
                         mLength,
                         mIsKeyFrame
                     )
                     if (res == DataCacheCode.RES_SUCCESS) {
-                        if (mNextTimeStamp[0] > endTime) {
+                        if (mCurTimeStamp[0] > endTime) {
                             mVideoMuxerThread?.quit()
                         }
-                        return FrameData(mFrameBuffer, mLength[0], mNextTimeStamp[0], mIsKeyFrame[0])
+                        return FrameData(mFrameBuffer, mLength[0], mCurTimeStamp[0], mIsKeyFrame[0])
                     } else if (res == DataCacheCode.RES_FAILED) {
                         mVideoMuxerThread?.quit()
                     }

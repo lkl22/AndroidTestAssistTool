@@ -34,14 +34,14 @@ object FrameDataCacheUtils {
      * 通过时间戳从缓存区中获取最近的一个关键帧数据
      *
      * @param timestamp 传入的时间戳 ms
-     * @param nextTimestamp 下一帧的时间戳 ms
+     * @param curTimestamp 查找到的关键帧的时间戳 ms
      * @param frameData 帧数据
      * @param length 数据长度
      * @return 0成功，非0失败
      */
     external fun getFirstFrameData(
         timestamp: Long,
-        nextTimestamp: LongArray,
+        curTimestamp: LongArray,
         frameData: ByteArray,
         length: IntArray
     ): Int
@@ -49,16 +49,16 @@ object FrameDataCacheUtils {
     /**
      * 通过时间戳从缓存区中获取下一帧数据
      *
-     * @param curTimestamp 传入的时间戳 ms
-     * @param nextTimestamp 下一帧的时间戳 ms
+     * @param preTimestamp 前一帧的时间戳 ms
+     * @param curTimestamp 当前帧的时间戳 ms
      * @param frameData 帧数据
      * @param length 数据长度
      * @param isKeyFrame 是否关键帧（I帧）true I帧
      * @return 0成功，非0失败
      */
     external fun getNextFrameData(
-        curTimestamp: Long,
-        nextTimestamp: LongArray,
+        preTimestamp: Long,
+        curTimestamp: LongArray,
         frameData: ByteArray,
         length: IntArray,
         isKeyFrame: BooleanArray

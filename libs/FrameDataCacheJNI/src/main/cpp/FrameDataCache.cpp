@@ -248,7 +248,7 @@ void addFrame(int64 timestamp, bool isKeyFrame, unsigned char *puf, int nLen) {
     s_pCurPos += nLen;
 }
 
-int getFirstFrame(int64 timestamp, int64 &nextTimestamp, unsigned char *&data, int &nLen) {
+int getFirstFrame(int64 timestamp, int64 &curTimestamp, unsigned char *&data, int &nLen) {
     unique_readguard<WFirstRWLock> readLock(s_Lock);
 
     KEY_FRAME_TS_VECTOR_CONST_ITERATOR iterKeyFrame = std::lower_bound(sKeyFrameTSVec.begin(),
@@ -262,7 +262,7 @@ int getFirstFrame(int64 timestamp, int64 &nextTimestamp, unsigned char *&data, i
             LOGI("get First frame iterKeyFrame 2:%lld", iterFrame->first);
             nLen = iterFrame->second->_nLen;
             data = iterFrame->second->_pBuf;
-            nextTimestamp = *iterKeyFrame;
+            curTimestamp = *iterKeyFrame;
             return 0;
         }
     } else {
@@ -272,7 +272,7 @@ int getFirstFrame(int64 timestamp, int64 &nextTimestamp, unsigned char *&data, i
             if (iterFrame != sFrameIndexMap.end()) {
                 nLen = iterFrame->second->_nLen;
                 data = iterFrame->second->_pBuf;
-                nextTimestamp = *iterKeyFrame;
+                curTimestamp = *iterKeyFrame;
                 return 0;
             }
         }
@@ -289,16 +289,16 @@ int getFirstFrame(int64 timestamp, int64 &nextTimestamp, unsigned char *&data, i
     return 1;
 }
 
-int getNextFrame(int64 curTimestamp, int64 &nextTimestamp, unsigned char *&data,
+int getNextFrame(int64 preTimestamp, int64 &curTimestamp, unsigned char *&data,
                  int &len, bool &isKeyFrame) {
     unique_readguard<WFirstRWLock> readLock(s_Lock);
-    FRAME_INDEX_MAP_CONST_ITERATOR iterFrame = sFrameIndexMap.find(curTimestamp);
+    FRAME_INDEX_MAP_CONST_ITERATOR iterFrame = sFrameIndexMap.find(preTimestamp);
     if (iterFrame != sFrameIndexMap.end()) {
         ++iterFrame;
         if (iterFrame != sFrameIndexMap.end()) {
             len = iterFrame->second->_nLen;
             isKeyFrame = iterFrame->second->_isKeyFrame;
-            nextTimestamp = iterFrame->first;
+            curTimestamp = iterFrame->first;
             data = iterFrame->second->_pBuf;
             if (data + len > s_pMemBuf + sMaxDataBuf) {
                 LOGE("data + nLen > s_pMemBuf + sMaxDataBuf ");
