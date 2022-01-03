@@ -15,8 +15,11 @@ class OperationReceiver : BroadcastReceiver() {
         private const val TAG = "OperationReceiver"
 
         private const val EXTRA_KEY_TYPE = "type"
+
         private const val TYPE_IS_EVN_READY = "isEvnReady"
         private const val TYPE_START_MUXER = "startMuxer"
+        private const val TYPE_IS_FINISHED_MUXER = "isFinishedMuxer"
+        private const val TYPE_RM_FINISHED_MUXER = "rmFinishedMuxer"
 
         private const val EXTRA_KEY_TIMESTAMP = "timestamp"
 
@@ -28,24 +31,39 @@ class OperationReceiver : BroadcastReceiver() {
         val params = SafeIntent(intent)
         val type = params.getStringExtra(EXTRA_KEY_TYPE)
         var resData = ""
-        if (type == TYPE_IS_EVN_READY) {
-            resData += ScreenCaptureManager.instance.isEnvReady()
-        } else if (type == TYPE_START_MUXER) {
-            val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
-            val fileName = FileUtils.videoDir + DateUtils.convertDateToString(
-                DateUtils.DATE_TIME,
-                Date(timestamp)
-            ).replace(" ", "_") +
-                    BitmapUtils.VIDEO_FILE_EXT
-            val totalTime = params.getIntExtra(EXTRA_KEY_TOTAL_TIME, 30)
-            ScreenCaptureManager.instance.startMuxer(
-                fileName,
-                timestamp - totalTime * 1000,
-                timestamp
-            )
-            resData += fileName
-            LogUtils.e(TAG, "timestamp: $timestamp totalTime: $totalTime fileName: $fileName")
+        when (type) {
+            TYPE_IS_EVN_READY -> {
+                resData += ScreenCaptureManager.instance.isEnvReady()
+            }
+            TYPE_START_MUXER -> {
+                resData += startMuxer(params)
+            }
+            TYPE_IS_FINISHED_MUXER -> {
+                val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
+                resData += ScreenCaptureManager.instance.isFinishedMuxerTask(timestamp)
+            }
+            TYPE_RM_FINISHED_MUXER -> {
+                val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
+                resData += ScreenCaptureManager.instance.removeFinishedMuxerTask(timestamp)
+            }
         }
         setResult(0, resData, null)
+    }
+
+    private fun startMuxer(params: SafeIntent): String {
+        val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
+        val fileName = FileUtils.videoDir + DateUtils.convertDateToString(
+            DateUtils.DATE_TIME,
+            Date(timestamp)
+        ).replace(" ", "_") +
+                BitmapUtils.VIDEO_FILE_EXT
+        val totalTime = params.getIntExtra(EXTRA_KEY_TOTAL_TIME, 30)
+        ScreenCaptureManager.instance.startMuxer(
+            fileName,
+            timestamp - totalTime * 1000,
+            timestamp
+        )
+        LogUtils.e(TAG, "timestamp: $timestamp totalTime: $totalTime fileName: $fileName")
+        return fileName
     }
 }

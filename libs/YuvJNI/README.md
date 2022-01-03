@@ -7,3 +7,5 @@
 [https://chromium.googlesource.com/libyuv/libyuv/](https://chromium.googlesource.com/libyuv/libyuv/)
 
 [Android视频处理之动态时间水印效果](https://www.jb51.net/article/93862.htm)
+
+[YUV Player](https://sourceforge.net/projects/raw-yuvplayer/)
