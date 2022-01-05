@@ -50,49 +50,6 @@ class VideoDecoderCore {
     companion object {
         private const val TAG = "VideoDecoderCore"
         var mMediaFormat: MediaFormat? = null
-        private fun selectCodec(mimeType: String): MediaCodecInfo? {
-            val numCodecs = MediaCodecList.getCodecCount()
-            for (i in 0 until numCodecs) {
-                val codecInfo = MediaCodecList.getCodecInfoAt(i)
-                if (codecInfo.isEncoder) {
-                    continue
-                }
-                val types = codecInfo.supportedTypes
-                for (j in types.indices) {
-                    if (types[j].equals(mimeType, ignoreCase = true)) {
-                        return codecInfo
-                    }
-                }
-            }
-            return null
-        }
-
-        /**
-         * Returns a color format that is supported by the codec and by this test code.  If no
-         * match is found, this throws a test failure -- the set of formats known to the test
-         * should be expanded for new platforms.
-         */
-        private fun selectColorFormat(codecInfo: MediaCodecInfo, mimeType: String): Int {
-            val capabilities = codecInfo.getCapabilitiesForType(mimeType)
-            for (i in capabilities.colorFormats.indices) {
-                val colorFormat = capabilities.colorFormats[i]
-                if (isRecognizedFormat(colorFormat)) {
-                    return colorFormat
-                }
-            }
-            return 0 // not reached
-        }
-
-        /**
-         * Returns true if this is a color format that this test code understands (i.e. we know how
-         * to read and generate frames in this format).
-         */
-        private fun isRecognizedFormat(colorFormat: Int): Boolean {
-            return when (colorFormat) {
-                CodecCapabilities.COLOR_FormatYUV420SemiPlanar, CodecCapabilities.COLOR_FormatYUV420Planar, CodecCapabilities.COLOR_FormatYUV420PackedPlanar, CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar, CodecCapabilities.COLOR_TI_FormatYUV420PackedSemiPlanar -> true
-                else -> false
-            }
-        }
     }
 
     private var mFrameRate = 0
@@ -168,12 +125,12 @@ class VideoDecoderCore {
         mMediaFormat = format
         // Create a MediaCodec encoder, and configure it with our format.  Get a Surface
         // we can use for input and wrap it with a class that handles the EGL work.
-        val ci = selectCodec(mimeType)
+        val ci = MediaUtils.selectCodec(mimeType)
         if (ci == null) {
             d(TAG, "media decodec not support")
             return
         }
-        mColorFormat = selectColorFormat(ci, mimeType)
+        mColorFormat = MediaUtils.selectColorFormat(ci, mimeType)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val capabilities = ci.getCapabilitiesForType(mimeType)
             val videoCapabilities = capabilities.videoCapabilities
