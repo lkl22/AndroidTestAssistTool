@@ -12,6 +12,12 @@ import com.lkl.medialib.R
 import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.manager.ScreenCaptureManager
 
+/**
+ * 手机屏幕录制Service
+ *
+ * @author likunlun
+ * @since 2022/01/05
+ */
 class ScreenCaptureService : Service() {
     companion object {
         const val TAG = "ScreenCaptureService"

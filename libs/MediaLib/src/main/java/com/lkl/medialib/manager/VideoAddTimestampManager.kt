@@ -4,6 +4,12 @@ import android.media.MediaFormat
 import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.core.VideoExtractorThread
 
+/**
+ * video视频转换添加时间戳管理类
+ *
+ * @author likunlun
+ * @since 2022/01/05
+ */
 class VideoAddTimestampManager {
     companion object {
         private const val TAG = "VideoAddTimestampManager"

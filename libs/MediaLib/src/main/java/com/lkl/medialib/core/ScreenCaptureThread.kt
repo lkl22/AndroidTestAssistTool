@@ -105,18 +105,14 @@ class ScreenCaptureThread(
             val data = ByteArray(mBufferInfo.size)
             encodedData[data]
 
-            callback.putFrameData(
-                FrameData(
-                    data, mBufferInfo.size, System.currentTimeMillis(),
-                    mBufferInfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME
-                )
+            val frameData = FrameData(
+                data, mBufferInfo.size, System.currentTimeMillis(),
+                mBufferInfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME
             )
+            callback.putFrameData(frameData)
 
             if (MediaConst.PRINT_DEBUG_LOG) {
-                LogUtils.d(
-                    TAG,
-                    "sent ${mBufferInfo.size} bytes callback, ts=${mBufferInfo.presentationTimeUs}"
-                )
+                LogUtils.d(TAG, "sent frame data $frameData")
             }
         }
     }

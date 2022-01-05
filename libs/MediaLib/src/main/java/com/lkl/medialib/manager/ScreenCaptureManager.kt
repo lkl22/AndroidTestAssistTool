@@ -17,6 +17,12 @@ import com.lkl.medialib.core.VideoMuxerThread
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * 手机屏幕录制管理类
+ *
+ * @author likunlun
+ * @since 2022/01/05
+ */
 class ScreenCaptureManager {
     companion object {
         private const val TAG = "ScreenCaptureManager"
@@ -73,13 +79,16 @@ class ScreenCaptureManager {
                 }
 
                 override fun putFrameData(frameData: FrameData) {
-                    // 将编码好的H264数据存储到缓冲中
-                    FrameDataCacheUtils.addFrameData(
-                        frameData.timestamp,
-                        frameData.isKeyFrame,
-                        frameData.data,
-                        frameData.length
-                    )
+                    // 正在制作视频时暂停缓存视频frame数据
+                    if (!isMuxer.get()) {
+                        // 将编码好的H264数据存储到缓冲中
+                        FrameDataCacheUtils.addFrameData(
+                            frameData.timestamp,
+                            frameData.isKeyFrame,
+                            frameData.data,
+                            frameData.length
+                        )
+                    }
                 }
             }
         )
