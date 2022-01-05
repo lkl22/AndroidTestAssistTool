@@ -2,7 +2,7 @@ package com.lkl.medialib.bean
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import com.lkl.medialib.constant.VideoConfig
+import com.lkl.medialib.constant.VideoProperty
 
 /**
  * 媒体操作相关的实体类
@@ -42,6 +42,10 @@ data class FrameData(
         result = 31 * result + isKeyFrame.hashCode()
         return result
     }
+
+    override fun toString(): String {
+        return "FrameData(length=$length, timestamp=$timestamp, isKeyFrame=$isKeyFrame)"
+    }
 }
 
 /**
@@ -60,9 +64,9 @@ data class MediaFormatParams(
     var width: Int,
     var height: Int,
     var mimeType: String = MediaFormat.MIMETYPE_VIDEO_AVC, // H264
-    var bitRate: Int = VideoConfig.BIT_RATE,
-    var frameRate: Int = VideoConfig.FPS,
-    var iFrameInterval: Int = VideoConfig.IFRAME_INTERVAL,
+    var bitRate: Int = VideoProperty.BIT_RATE,
+    var frameRate: Int = VideoProperty.FPS,
+    var iFrameInterval: Int = VideoProperty.IFRAME_INTERVAL,
     var colorFormat: Int = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
 )
 

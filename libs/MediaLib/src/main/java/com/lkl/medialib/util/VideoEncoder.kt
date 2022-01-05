@@ -2,7 +2,7 @@ package com.lkl.medialib.util
 
 import com.lkl.commonlib.util.LogUtils.d
 import android.media.MediaCodec
-import com.lkl.medialib.constant.VideoConfig
+import com.lkl.medialib.constant.VideoProperty
 import android.media.MediaMuxer
 import kotlin.Throws
 import android.media.MediaFormat
@@ -26,10 +26,10 @@ class VideoEncoder : Runnable {
     }
 
     private var mEncoder: MediaCodec? = null
-    private var mime = VideoConfig.MIME //HEVC -> H265 AVC -> H264
-    private var rate = VideoConfig.BIT_RATE
-    private var frameRate = VideoConfig.FPS
-    private var frameInterval = VideoConfig.IFRAME_INTERVAL
+    private var mime = MediaFormat.MIMETYPE_VIDEO_AVC //HEVC -> H265 AVC -> H264
+    private var rate = VideoProperty.BIT_RATE
+    private var frameRate = VideoProperty.FPS
+    private var frameInterval = VideoProperty.IFRAME_INTERVAL
     private val fpsTime: Int = 1000 / frameRate
     private var mThread: Thread? = null
     private var mStartFlag = false

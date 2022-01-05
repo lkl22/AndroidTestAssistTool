@@ -3,6 +3,21 @@ package com.lkl.medialib.constant
 import com.lkl.medialib.BuildConfig
 
 /**
+ * media相关的一些常量
+ */
+object MediaConst {
+    /**
+     * 是否打印media处理的debug log
+     */
+    val PRINT_DEBUG_LOG = BuildConfig.DEBUG
+
+    /**
+     * video类型的mimetype前缀 HEVC -> H265 AVC -> H264
+     */
+    const val MIMETYPE_VIDEO_PRE = "video/"
+}
+
+/**
  * 屏幕录制常量
  */
 object ScreenCapture {
@@ -23,20 +38,12 @@ object ScreenCapture {
      * 默认缓存大小
      */
     const val DEFAULT_CACHE_SIZE = 30
-
-    /**
-     * 是否打印视频处理的debug log
-     */
-    val PRINT_DEBUG_LOG = BuildConfig.DEBUG
 }
 
 /**
- * 视频录制配置参数
+ * 视频相关的一些属性
  */
-object VideoConfig {
-    @JvmField
-    val MIME = "video/avc" //HEVC -> H265 AVC -> H264
-
+object VideoProperty {
     @JvmField
     var FPS = 20
 
@@ -47,7 +54,7 @@ object VideoConfig {
     var HEIGHT = 720
 
     /**
-     * 录制视频时的比特率
+     * 视频的比特率
      */
     const val BIT_RATE = 6000000
 

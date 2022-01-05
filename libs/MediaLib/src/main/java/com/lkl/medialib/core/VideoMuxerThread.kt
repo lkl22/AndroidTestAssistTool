@@ -9,7 +9,7 @@ import com.lkl.commonlib.util.DateUtils
 import com.lkl.commonlib.util.FileUtils
 import com.lkl.commonlib.util.LogUtils
 import com.lkl.medialib.bean.FrameData
-import com.lkl.medialib.constant.ScreenCapture
+import com.lkl.medialib.constant.MediaConst
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -94,7 +94,7 @@ class VideoMuxerThread(
                 frameData.length
             )
             writeSampleData(mTrackIndex, sampleData, mBufferInfo)
-            if (ScreenCapture.PRINT_DEBUG_LOG) {
+            if (MediaConst.PRINT_DEBUG_LOG) {
                 LogUtils.d(
                     TAG, "get frame data: size -> ${frameData.length}  timestamp -> " +
                             DateUtils.convertDateToString(

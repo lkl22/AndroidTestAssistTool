@@ -10,6 +10,7 @@ import android.view.Surface
 import com.lkl.commonlib.util.LogUtils
 import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.bean.MediaFormatParams
+import com.lkl.medialib.constant.MediaConst
 import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.util.MediaUtils
 import java.io.IOException
@@ -111,7 +112,7 @@ class ScreenCaptureThread(
                 )
             )
 
-            if (ScreenCapture.PRINT_DEBUG_LOG) {
+            if (MediaConst.PRINT_DEBUG_LOG) {
                 LogUtils.d(
                     TAG,
                     "sent ${mBufferInfo.size} bytes callback, ts=${mBufferInfo.presentationTimeUs}"

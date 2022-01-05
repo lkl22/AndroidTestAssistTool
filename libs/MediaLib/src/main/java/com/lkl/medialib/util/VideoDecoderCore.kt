@@ -16,9 +16,7 @@
 package com.lkl.medialib.util
 
 import android.media.MediaCodec
-import android.media.MediaCodecInfo
 import android.media.MediaCodecInfo.CodecCapabilities
-import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Build
 import android.util.Log
@@ -28,7 +26,7 @@ import com.lkl.commonlib.util.LogUtils.d
 import com.lkl.commonlib.util.LogUtils.e
 import com.lkl.commonlib.util.LogUtils.w
 import com.lkl.medialib.bean.FrameData
-import com.lkl.medialib.constant.VideoConfig
+import com.lkl.medialib.constant.VideoProperty
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -118,7 +116,7 @@ class VideoDecoderCore {
             MediaFormat.KEY_COLOR_FORMAT,
             CodecCapabilities.COLOR_FormatYUV420Flexible
         )
-        format.setInteger(MediaFormat.KEY_BIT_RATE, VideoConfig.BIT_RATE)
+        format.setInteger(MediaFormat.KEY_BIT_RATE, VideoProperty.BIT_RATE)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, mFrameRate)
         //        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
         d(TAG, "format: $format")

@@ -4,11 +4,13 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
 import android.widget.EditText
 import com.lkl.commonlib.base.BaseActivity
 import com.lkl.commonlib.util.*
 import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.manager.ScreenCaptureManager
+import com.lkl.medialib.manager.VideoAddTimestampManager
 import com.lkl.medialib.service.ScreenCaptureService
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.AppSettingsDialog
@@ -32,7 +34,8 @@ class MainActivity : BaseActivity() {
         setContentView(R.layout.activity_main)
         tipEt = findViewById(R.id.tipEt)
         val safeIntent = SafeIntent(intent)
-        cacheSize = safeIntent.getIntExtra(ScreenCapture.KEY_CACHE_SIZE, ScreenCapture.DEFAULT_CACHE_SIZE)
+        cacheSize =
+            safeIntent.getIntExtra(ScreenCapture.KEY_CACHE_SIZE, ScreenCapture.DEFAULT_CACHE_SIZE)
         requestStoragePermission()
     }
 
@@ -92,7 +95,14 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    fun startEncode(view: android.view.View) {}
+    fun startEncode(view: android.view.View) {
+        VideoAddTimestampManager.instance.startTransform(
+            if (TextUtils.isEmpty(tipEt?.text.toString()))
+                "/sdcard/Android/data/com.lkl.androidtestassisttool/cache/video/2022-01-05_22:34:25.mp4"
+            else
+                tipEt?.text.toString()
+        )
+    }
 
     fun startMuxer(view: android.view.View) {
         val fileName = FileUtils.videoDir + DateUtils.nowTime.replace(" ", "_") +

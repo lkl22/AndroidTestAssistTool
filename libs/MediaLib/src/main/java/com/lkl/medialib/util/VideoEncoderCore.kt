@@ -23,7 +23,7 @@ import android.media.MediaCodec
 import kotlin.Throws
 import android.media.MediaFormat
 import android.media.MediaCodecInfo
-import com.lkl.medialib.constant.VideoConfig
+import com.lkl.medialib.constant.VideoProperty
 import com.lkl.framedatacachejni.FrameDataCacheUtils
 import com.lkl.commonlib.util.DateUtils
 import com.lkl.medialib.BuildConfig
@@ -50,8 +50,8 @@ class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
         private const val TAG = "VideoEncoderCore"
 
         // TODO: these ought to be configurable as well
-        private val MIME_TYPE = VideoConfig.MIME // H.264 Advanced Video Coding
-        private val IFRAME_INTERVAL = VideoConfig.IFRAME_INTERVAL // 1 seconds between I-frames
+        private val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_AVC // H.264 Advanced Video Coding
+        private val IFRAME_INTERVAL = VideoProperty.IFRAME_INTERVAL // 1 seconds between I-frames
         var mMediaFormat: MediaFormat? = null
     }
 
@@ -98,7 +98,7 @@ class VideoEncoderCore(private val mFrameRate: Int) : Runnable {
             MediaFormat.KEY_COLOR_FORMAT,
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
         )
-        format.setInteger(MediaFormat.KEY_BIT_RATE, VideoConfig.BIT_RATE)
+        format.setInteger(MediaFormat.KEY_BIT_RATE, VideoProperty.BIT_RATE)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, mFrameRate)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL)
         d(TAG, "format: $format")

@@ -1,5 +1,6 @@
 package com.lkl.medialib.core
 
+import com.lkl.commonlib.util.LogUtils
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -8,18 +9,25 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author likunlun
  * @since 2021/12/23
  */
-abstract class BaseMediaThread internal constructor(threadName: String) : Thread(threadName) {
+abstract class BaseMediaThread(private val threadName: String) : Thread(threadName) {
+    companion object {
+        private const val TAG = "BaseMediaThread"
+    }
+
     private val mQuit = AtomicBoolean(false)
 
     override fun run() {
         try {
+            LogUtils.i(TAG, "$threadName prepare.")
             prepare()
+            LogUtils.i(TAG, "$threadName drain.")
             while (!mQuit.get()) {
                 drain()
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
         } finally {
+            LogUtils.i(TAG, "$threadName release.")
             release()
         }
     }
