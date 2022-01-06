@@ -12,7 +12,7 @@ import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 /**
- * 视频解析工作线程
+ * 视频解码工作线程
  *
  * @author likunlun
  * @since 2022/01/06
@@ -176,7 +176,7 @@ class VideoDecoderThread(
 
     interface Callback {
         /**
-         * 获取待解码待数据帧
+         * 获取待解码的数据帧
          */
         fun getEncodeData(): FrameData?
 
