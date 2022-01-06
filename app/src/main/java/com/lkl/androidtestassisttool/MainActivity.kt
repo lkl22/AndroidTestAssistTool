@@ -96,9 +96,9 @@ class MainActivity : BaseActivity() {
     }
 
     fun startEncode(view: android.view.View) {
-        VideoAddTimestampManager.instance.startTransform(
+        VideoAddTimestampManager().startTransform(
             if (TextUtils.isEmpty(tipEt?.text.toString()))
-                "/sdcard/Android/data/com.lkl.androidtestassisttool/cache/video/2022-01-05_22:34:25.mp4"
+                "/sdcard/Android/data/com.lkl.androidtestassisttool/cache/video/2022-01-06_22:05:38.mp4"
             else
                 tipEt?.text.toString()
         )

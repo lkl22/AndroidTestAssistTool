@@ -31,13 +31,6 @@ class VideoMuxerThread(
 
     private var mMuxer: MediaMuxer? = null
     private val mBufferInfo = MediaCodec.BufferInfo()
-    private var mMuxerStarted = false
-
-    // 时间戳（ms），通过该时间抽帧
-    private var mTimeStamp: Long = -1
-
-    // video视频第一帧时间戳 (ms)，抽帧时作为起始点
-    private var mFirstTimeStamp: Long = -1
     private var mOutputFileName = ""
     private var mTrackIndex = -1
 
@@ -60,8 +53,6 @@ class VideoMuxerThread(
         mMuxer?.apply {
             mTrackIndex = addTrack(mediaFormat)
             start()
-            mMuxerStarted = true
-
             firstFrameHandler()
         }
     }
@@ -95,13 +86,7 @@ class VideoMuxerThread(
             )
             writeSampleData(mTrackIndex, sampleData, mBufferInfo)
             if (MediaConst.PRINT_DEBUG_LOG) {
-                LogUtils.d(
-                    TAG, "get frame data: size -> ${frameData.length}  timestamp -> " +
-                            DateUtils.convertDateToString(
-                                DateUtils.DATE_TIME,
-                                Date(frameData.timestamp)
-                            ) + " isKeyFrame -> ${frameData.isKeyFrame}"
-                )
+                LogUtils.d(TAG, "get frame data -> $frameData")
             }
         }
     }
@@ -120,11 +105,25 @@ class VideoMuxerThread(
     }
 
     interface Callback {
-
+        /**
+         * 获取第一个关键字数据
+         *
+         * @return 帧数据
+         */
         fun getFirstIFrameData(): FrameData?
 
+        /**
+         * 获取下一帧数据
+         *
+         * @return 帧数据
+         */
         fun getNextFrameData(): FrameData?
 
+        /**
+         * 合成完成
+         *
+         * @param fileName 文件名
+         */
         fun finished(fileName: String)
     }
 }

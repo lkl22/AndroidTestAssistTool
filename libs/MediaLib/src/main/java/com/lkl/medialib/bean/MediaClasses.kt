@@ -12,7 +12,7 @@ import com.lkl.medialib.constant.VideoProperty
  *
  * @param data 帧数据
  * @param length 帧数据长度
- * @param timestamp 时间戳
+ * @param timestamp 时间戳 ms
  * @param isKeyFrame 是否关键帧（I帧）true I帧
  */
 data class FrameData(

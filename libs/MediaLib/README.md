@@ -1,4 +1,6 @@
 
+文件导出路径：
+/Users/likunlun/Library/Caches/Google/AndroidStudio2020.3/device-explorer
 
 ## 参考文献
 

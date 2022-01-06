@@ -64,8 +64,8 @@ class ScreenCaptureManager {
     fun startRecord(resultCode: Int, data: Intent, cacheSize: Int) {
         mScreenCaptureThread = ScreenCaptureThread(
             MediaFormatParams(
-                mDisplayMetrics.widthPixels,
-                mDisplayMetrics.heightPixels,
+                mDisplayMetrics.widthPixels / 16 * 16, // 宽高要是16的整数倍
+                mDisplayMetrics.heightPixels / 16 * 16,
                 colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
             ),
             mDisplayMetrics.densityDpi,
@@ -123,7 +123,7 @@ class ScreenCaptureManager {
         // 删除旧的Cache文件，只保留8个
         FileUtils.deleteOldFiles(FileUtils.videoDir, 8)
         mVideoMuxerThread =
-            VideoMuxerThread(mediaFormat!!, fileName, object : VideoMuxerThread.Callback {
+            VideoMuxerThread(mediaFormat, fileName, object : VideoMuxerThread.Callback {
                 override fun getFirstIFrameData(): FrameData? {
                     val res = FrameDataCacheUtils.getFirstFrameData(
                         startTime,

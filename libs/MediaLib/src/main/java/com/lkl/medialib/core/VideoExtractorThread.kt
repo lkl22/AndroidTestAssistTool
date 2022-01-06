@@ -69,6 +69,7 @@ class VideoExtractorThread(
     }
 
     override fun release() {
+        callback.finished()
         mExtractor.release()
     }
 
@@ -87,5 +88,10 @@ class VideoExtractorThread(
          * @param frameData 视频帧数据
          */
         fun putExtractData(frameData: FrameData)
+
+        /**
+         * 提取数据已经完成
+         */
+        fun finished()
     }
 }
