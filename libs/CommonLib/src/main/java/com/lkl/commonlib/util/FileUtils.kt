@@ -356,4 +356,19 @@ object FileUtils {
         return fileData.toString()
     }
 
+    /**
+     * 把数据存入指定的文件
+     *
+     * @param path 文件路径
+     * @param data 数据
+     */
+    fun writeToFile(path: String, data: ByteArray) {
+        try {
+            val fos = FileOutputStream(path, false)
+            fos.write(data)
+            fos.close()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
 }

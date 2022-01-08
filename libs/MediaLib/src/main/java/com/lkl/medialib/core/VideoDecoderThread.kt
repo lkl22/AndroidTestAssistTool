@@ -8,7 +8,6 @@ import com.lkl.commonlib.util.LogUtils
 import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.constant.MediaConst
 import com.lkl.medialib.constant.VideoProperty
-import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 /**
@@ -144,7 +143,7 @@ class VideoDecoderThread(
             decodedOutputBuffer[data]
             if (!hasSavaBitmap) {
                 hasSavaBitmap = true
-                writeToFile(FileUtils.videoDir + "ipc.yuv", data)
+                FileUtils.writeToFile(FileUtils.videoDir + "ipc.yuv", data)
             }
 
             val frameData = FrameData(
@@ -157,16 +156,6 @@ class VideoDecoderThread(
             if (MediaConst.PRINT_DEBUG_LOG) {
                 LogUtils.d(TAG, "decode offset ${mBufferInfo.offset} data: $frameData")
             }
-        }
-    }
-
-    private fun writeToFile(path: String, data: ByteArray) {
-        try {
-            val fos = FileOutputStream(path, false)
-            fos.write(data)
-            fos.close()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
         }
     }
 

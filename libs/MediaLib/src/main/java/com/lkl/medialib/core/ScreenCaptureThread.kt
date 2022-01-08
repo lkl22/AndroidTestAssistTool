@@ -64,20 +64,23 @@ class ScreenCaptureThread(
     }
 
     override fun drain() {
-        val index = mEncoder!!.dequeueOutputBuffer(mBufferInfo, TIMEOUT_US)
-        when {
-            index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
-                // 后续输出格式变化
-                mMediaFormat = mEncoder?.outputFormat
-            }
-            index == MediaCodec.INFO_TRY_AGAIN_LATER -> {
-                // 请求超时
-                waitTime(10)
-            }
-            index >= 0 -> {
-                // 有效输出
-                encodeDataToCallback(index)
-                mEncoder?.releaseOutputBuffer(index, false)
+        mEncoder?.apply {
+            val index = dequeueOutputBuffer(mBufferInfo, TIMEOUT_US)
+            when {
+                index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                    // 后续输出格式变化
+                    mMediaFormat = outputFormat
+                    LogUtils.e(TAG, "outputFormat: $outputFormat")
+                }
+                index == MediaCodec.INFO_TRY_AGAIN_LATER -> {
+                    // 请求超时
+                    waitTime(10)
+                }
+                index >= 0 -> {
+                    // 有效输出
+                    encodeDataToCallback(index)
+                    releaseOutputBuffer(index, false)
+                }
             }
         }
     }

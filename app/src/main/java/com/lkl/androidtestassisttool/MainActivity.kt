@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
 import android.widget.EditText
+import com.lkl.commonlib.BaseApplication
 import com.lkl.commonlib.base.BaseActivity
 import com.lkl.commonlib.util.*
 import com.lkl.medialib.constant.ScreenCapture
@@ -37,6 +38,9 @@ class MainActivity : BaseActivity() {
         cacheSize =
             safeIntent.getIntExtra(ScreenCapture.KEY_CACHE_SIZE, ScreenCapture.DEFAULT_CACHE_SIZE)
         requestStoragePermission()
+
+        val mDisplayMetrics = DisplayUtils.getDisplayMetrics(BaseApplication.context)
+        LogUtils.e(TAG, "${mDisplayMetrics.widthPixels} * ${mDisplayMetrics.heightPixels}")
     }
 
     @AfterPermissionGranted(RC_WRITE_EXTERNAL_STORAGE_PERM)
@@ -98,7 +102,7 @@ class MainActivity : BaseActivity() {
     fun startEncode(view: android.view.View) {
         VideoAddTimestampManager().startTransform(
             if (TextUtils.isEmpty(tipEt?.text.toString()))
-                "/sdcard/Android/data/com.lkl.androidtestassisttool/cache/video/2022-01-06_22:05:38.mp4"
+                "/sdcard/Android/data/com.lkl.androidtestassisttool/cache/video/2022-01-08_20:55:47.mp4"
             else
                 tipEt?.text.toString()
         )
