@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 class VideoDecoderThread(
     private val mimeType: String,
     private val mediaFormat: MediaFormat,
-    private val callback: Callback,
+    private val callback: CodecCallback,
     threadName: String = TAG
 ) : BaseMediaThread(threadName) {
     companion object {
@@ -54,7 +54,7 @@ class VideoDecoderThread(
     }
 
     override fun drain() {
-        val frameData = callback.getEncodeData()
+        val frameData = callback.getFrameData()
         frameData?.apply {
             putDataToInputBuffer(data, timestamp * 1000)
         }
@@ -110,6 +110,7 @@ class VideoDecoderThread(
                 // should happen before receiving buffers, and should only happen once
                 val mediaFormat = decoder.outputFormat
                 LogUtils.d(TAG, "decoder output format changed: $mediaFormat")
+                callback.formatChanged(mediaFormat)
             } else if (decoderStatus > 0) {
                 val decodedOutputBuffer = decoder.getOutputBuffer(decoderStatus)
                 if (decodedOutputBuffer == null) {
@@ -152,7 +153,7 @@ class VideoDecoderThread(
                 mBufferInfo.presentationTimeUs / 1000,
                 mBufferInfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME
             )
-            callback.putDecodeData(frameData)
+            callback.putFrameData(frameData)
             if (MediaConst.PRINT_DEBUG_LOG) {
                 LogUtils.d(TAG, "decode offset ${mBufferInfo.offset} data: $frameData")
             }
@@ -172,24 +173,5 @@ class VideoDecoderThread(
     override fun release() {
         callback.finished()
         mDecoder?.release()
-    }
-
-    interface Callback {
-        /**
-         * 获取待解码的数据帧
-         */
-        fun getEncodeData(): FrameData?
-
-        /**
-         * 将解码出来的数据回调出去
-         *
-         * @param frameData 解码后的视频帧数据
-         */
-        fun putDecodeData(frameData: FrameData)
-
-        /**
-         * 数据解码已经结束
-         */
-        fun finished()
     }
 }

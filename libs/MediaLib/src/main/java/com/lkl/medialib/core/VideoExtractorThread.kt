@@ -55,7 +55,7 @@ class VideoExtractorThread(
         val frameData = FrameData(
             data,
             size,
-            mExtractor.sampleTime,
+            mExtractor.sampleTime / 1000,
             mExtractor.sampleFlags == MediaCodec.BUFFER_FLAG_KEY_FRAME
         )
         callback.putExtractData(frameData)

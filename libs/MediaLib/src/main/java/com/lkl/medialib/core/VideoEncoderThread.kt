@@ -19,7 +19,7 @@ import java.nio.ByteBuffer
 class VideoEncoderThread(
     private val mimeType: String,
     private val mediaFormat: MediaFormat,
-    private val callback: Callback,
+    private val callback: CodecCallback,
     threadName: String = TAG
 ) : BaseMediaThread(threadName) {
     companion object {
@@ -30,16 +30,17 @@ class VideoEncoderThread(
     private var mEncoder: MediaCodec? = null
     private val mBufferInfo = MediaCodec.BufferInfo()
 
-
     override fun prepare() {
+        LogUtils.d(TAG, "before mediaFormat: $mediaFormat")
+        mediaFormat.setString(MediaFormat.KEY_MIME, mimeType)
         mediaFormat.setInteger(
             MediaFormat.KEY_COLOR_FORMAT,
-            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
+            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible
         )
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, VideoProperty.BIT_RATE)
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, VideoProperty.FPS)
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, VideoProperty.IFRAME_INTERVAL)
-        LogUtils.d(TAG, "mediaFormat: $mediaFormat")
+        LogUtils.d(TAG, "after mediaFormat: $mediaFormat")
 
         // Create a MediaCodec encoder, and configure it with our format.  Get a Surface
         // we can use for input and wrap it with a class that handles the EGL work.
@@ -51,7 +52,7 @@ class VideoEncoderThread(
     }
 
     override fun drain() {
-        val frameData = callback.getDecodeData()
+        val frameData = callback.getFrameData()
         frameData?.apply {
             putDataToInputBuffer(data, timestamp * 1000)
         }
@@ -62,7 +63,7 @@ class VideoEncoderThread(
      * 向编码器InputBuffer中填入数据
      *
      * @param data NV21数据
-     * @param timestamp 时间戳 ms
+     * @param timestamp 时间戳 us
      * @throws IOException
      */
     @Throws(IOException::class)
@@ -77,7 +78,7 @@ class VideoEncoderThread(
                 }
                 buffer.clear()
                 buffer.put(data)
-                queueInputBuffer(index, 0, data.size, timestamp * 1000, 0)
+                queueInputBuffer(index, 0, data.size, timestamp, 0)
             }
             drainEncoder(this)
         }
@@ -94,10 +95,12 @@ class VideoEncoderThread(
                 if (MediaConst.PRINT_DEBUG_LOG) {
                     LogUtils.d(TAG, "no output available, spinning to await EOS")
                 }
+                break
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // should happen before receiving buffers, and should only happen once
                 val mediaFormat = encoder.outputFormat
                 LogUtils.d(TAG, "encoder output format changed: $mediaFormat")
+                callback.formatChanged(mediaFormat)
             } else if (encoderStatus < 0) {
                 LogUtils.d(
                     TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
@@ -141,7 +144,7 @@ class VideoEncoderThread(
                 mBufferInfo.presentationTimeUs / 1000,
                 mBufferInfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME
             )
-            callback.putEncodeData(frameData)
+            callback.putFrameData(frameData)
             if (MediaConst.PRINT_DEBUG_LOG) {
                 LogUtils.d(TAG, "encode data: $frameData")
             }
@@ -154,24 +157,5 @@ class VideoEncoderThread(
     override fun release() {
         callback.finished()
         mEncoder?.release()
-    }
-
-    interface Callback {
-        /**
-         * 获取待编码的数据帧
-         */
-        fun getDecodeData(): FrameData?
-
-        /**
-         * 将编码出来的数据回调出去
-         *
-         * @param frameData 解码后的视频帧数据
-         */
-        fun putEncodeData(frameData: FrameData)
-
-        /**
-         * 数据编码已经结束
-         */
-        fun finished()
     }
 }
