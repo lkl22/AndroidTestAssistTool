@@ -59,7 +59,7 @@ class ScreenCaptureService : Service() {
         val builder =
             NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID) //获取一个Notification构造器
                 .setContentTitle("ScreenCapture") // 设置下拉列表里的标题
-                .setSmallIcon(R.mipmap.ic_launcher) // 设置状态栏内的小图标
+                .setSmallIcon(R.mipmap.icon_launcher) // 设置状态栏内的小图标
                 .setContentText("is running......") // 设置上下文内容
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setWhen(System.currentTimeMillis()) // 设置该通知发生的时间

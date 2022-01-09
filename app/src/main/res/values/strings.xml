@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidTestAssistTool</string>
+    <string name="app_name">Test Tools</string>
 
     <string name="rationale_record_audio">该APP需要录制音频。</string>
     <string name="rationale_camera">该APP需要访问你的摄像机拍照、录像。</string>
