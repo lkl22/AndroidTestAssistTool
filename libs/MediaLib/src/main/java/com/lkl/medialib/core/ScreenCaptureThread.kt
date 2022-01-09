@@ -3,7 +3,6 @@ package com.lkl.medialib.core
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaCodec
-import android.media.MediaFormat
 import android.media.projection.MediaProjection
 import android.util.Log
 import android.view.Surface
@@ -11,7 +10,6 @@ import com.lkl.commonlib.util.LogUtils
 import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.bean.MediaFormatParams
 import com.lkl.medialib.constant.MediaConst
-import com.lkl.medialib.constant.ScreenCapture
 import com.lkl.medialib.util.MediaUtils
 import java.io.IOException
 
@@ -25,7 +23,7 @@ class ScreenCaptureThread(
     private val mediaFormatParams: MediaFormatParams,
     private val dpi: Int,
     private val mediaProjection: MediaProjection,
-    private val callback: Callback,
+    private val callback: CodecCallback,
     threadName: String = TAG
 ) : BaseMediaThread(threadName) {
     companion object {
@@ -39,12 +37,8 @@ class ScreenCaptureThread(
     private val mBufferInfo = MediaCodec.BufferInfo()
     private var mVirtualDisplay: VirtualDisplay? = null
 
-    private var mMediaFormat: MediaFormat? = null
-
     @Throws(IOException::class)
     override fun prepare() {
-        callback.prePrepare(mediaFormatParams)
-
         val format = MediaUtils.createVideoFormat(mediaFormatParams)
         Log.d(TAG, "created video format: $format")
         mEncoder = MediaCodec.createEncoderByType(mediaFormatParams.mimeType)
@@ -59,8 +53,8 @@ class ScreenCaptureThread(
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC, mSurface, null, null
             )
             Log.d(TAG, "created virtual display: $mVirtualDisplay")
+            callback.prepare()
         }
-
     }
 
     override fun drain() {
@@ -69,8 +63,9 @@ class ScreenCaptureThread(
             when {
                 index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     // 后续输出格式变化
-                    mMediaFormat = outputFormat
-                    LogUtils.e(TAG, "outputFormat: $outputFormat")
+                    val mediaFormat = outputFormat
+                    LogUtils.e(TAG, "outputFormat: $mediaFormat")
+                    callback.formatChanged(mediaFormat)
                 }
                 index == MediaCodec.INFO_TRY_AGAIN_LATER -> {
                     // 请求超时
@@ -78,16 +73,16 @@ class ScreenCaptureThread(
                 }
                 index >= 0 -> {
                     // 有效输出
-                    encodeDataToCallback(index)
+                    handleEncodeData(this, index)
                     releaseOutputBuffer(index, false)
                 }
             }
         }
     }
 
-    private fun encodeDataToCallback(index: Int) {
+    private fun handleEncodeData(encoder: MediaCodec, index: Int) {
         // 获取到的实时帧视频数据
-        var encodedData = mEncoder!!.getOutputBuffer(index)
+        var encodedData = encoder.getOutputBuffer(index)
         if (mBufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0) {
             // The codec config data was pulled out and fed to the muxer
             // when we got the INFO_OUTPUT_FORMAT_CHANGED status. Ignore it.
@@ -115,13 +110,9 @@ class ScreenCaptureThread(
             callback.putFrameData(frameData)
 
             if (MediaConst.PRINT_DEBUG_LOG) {
-                LogUtils.d(TAG, "sent frame data $frameData")
+                LogUtils.d(TAG, "encode frame data: $frameData")
             }
         }
-    }
-
-    fun getMediaFormat(): MediaFormat? {
-        return mMediaFormat
     }
 
     override fun release() {

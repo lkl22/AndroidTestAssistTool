@@ -187,8 +187,8 @@ class VideoAddTimestampManager {
                 return frameData
             }
 
-            override fun finished(fileName: String) {
-                LogUtils.d(TAG, "startMuxerVideo finished fileName $fileName")
+            override fun finished(filePath: String) {
+                LogUtils.d(TAG, "startMuxerVideo finished fileName $filePath")
             }
         })
         mVideoMuxerThread?.start()

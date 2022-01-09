@@ -19,6 +19,7 @@ class OperationReceiver : BroadcastReceiver() {
         private const val TYPE_IS_EVN_READY = "isEvnReady"
         private const val TYPE_START_MUXER = "startMuxer"
         private const val TYPE_IS_FINISHED_MUXER = "isFinishedMuxer"
+        private const val TYPE_GET_MUXER_VIDEO = "getMuxerVideo"
         private const val TYPE_RM_FINISHED_MUXER = "rmFinishedMuxer"
 
         private const val EXTRA_KEY_TIMESTAMP = "timestamp"
@@ -38,6 +39,10 @@ class OperationReceiver : BroadcastReceiver() {
             TYPE_START_MUXER -> {
                 resData += startMuxer(params)
             }
+            TYPE_GET_MUXER_VIDEO -> {
+                val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
+                resData += ScreenCaptureManager.instance.getMuxerVideo(timestamp)
+            }
             TYPE_IS_FINISHED_MUXER -> {
                 val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
                 resData += ScreenCaptureManager.instance.isFinishedMuxerTask(timestamp)
@@ -50,20 +55,17 @@ class OperationReceiver : BroadcastReceiver() {
         setResult(0, resData, null)
     }
 
-    private fun startMuxer(params: SafeIntent): String {
+    private fun startMuxer(params: SafeIntent) {
         val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
-        val fileName = FileUtils.videoDir + DateUtils.convertDateToString(
-            DateUtils.DATE_TIME,
-            Date(timestamp)
-        ).replace(" ", "_") +
-                BitmapUtils.VIDEO_FILE_EXT
         val totalTime = params.getIntExtra(EXTRA_KEY_TOTAL_TIME, 30)
         ScreenCaptureManager.instance.startMuxer(
-            fileName,
             timestamp - totalTime * 1000,
-            timestamp
+            timestamp,
+            object : ScreenCaptureManager.Callback {
+                override fun muxerFinished(filePath: String) {
+                }
+            }
         )
-        LogUtils.e(TAG, "timestamp: $timestamp totalTime: $totalTime fileName: $fileName")
-        return fileName
+        LogUtils.e(TAG, "timestamp: $timestamp totalTime: $totalTime")
     }
 }

@@ -12,8 +12,10 @@ import com.lkl.framedatacachejni.constant.DataCacheCode
 import com.lkl.medialib.BuildConfig
 import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.bean.MediaFormatParams
+import com.lkl.medialib.core.CodecCallback
 import com.lkl.medialib.core.ScreenCaptureThread
 import com.lkl.medialib.core.VideoMuxerThread
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -37,6 +39,8 @@ class ScreenCaptureManager {
 
     private val mDisplayMetrics = DisplayUtils.getDisplayMetrics()
 
+    private var mMediaFormat: MediaFormat? = null
+
     /**
      * 录屏环境是否已就绪
      */
@@ -46,7 +50,7 @@ class ScreenCaptureManager {
      * 是否正在Muxer视频
      */
     private val isMuxer = AtomicBoolean(false)
-    private var finishedMuxerTask = CopyOnWriteArrayList<Long>()
+    private var finishedMuxerTask = ConcurrentHashMap<Long, String>()
 
     private var mScreenCaptureThread: ScreenCaptureThread? = null
 
@@ -70,12 +74,16 @@ class ScreenCaptureManager {
             ),
             mDisplayMetrics.densityDpi,
             mProjectionManager.getMediaProjection(resultCode, data),
-            object : ScreenCaptureThread.Callback {
-                override fun prePrepare(mediaFormatParams: MediaFormatParams) {
+            object : CodecCallback {
+                override fun prepare() {
                     FrameDataCacheUtils.initCache(
                         cacheSize, BuildConfig.DEBUG
                     )
                     isEnvReady.set(true)
+                }
+
+                override fun formatChanged(mediaFormat: MediaFormat) {
+                    mMediaFormat = mediaFormat
                 }
 
                 override fun putFrameData(frameData: FrameData) {
@@ -104,17 +112,13 @@ class ScreenCaptureManager {
         return isEnvReady.get()
     }
 
-    fun getMediaFormat(): MediaFormat? {
-        return mScreenCaptureThread?.getMediaFormat()
-    }
-
-    fun startMuxer(fileName: String, startTime: Long, endTime: Long) {
+    fun startMuxer(startTime: Long, endTime: Long, callback: Callback) {
         if (isMuxer.get()) {
             LogUtils.e(TAG, "正在制作视频。。。")
             return
         }
-        val mediaFormat = getMediaFormat()
-        if (mediaFormat == null) {
+
+        if (mMediaFormat == null) {
             LogUtils.e(TAG, "")
             isMuxer.set(false)
             return
@@ -123,7 +127,7 @@ class ScreenCaptureManager {
         // 删除旧的Cache文件，只保留8个
         FileUtils.deleteOldFiles(FileUtils.videoDir, 8)
         mVideoMuxerThread =
-            VideoMuxerThread(mediaFormat, fileName, object : VideoMuxerThread.Callback {
+            VideoMuxerThread(mMediaFormat!!, callback = object : VideoMuxerThread.Callback {
                 override fun getFirstIFrameData(): FrameData? {
                     val res = FrameDataCacheUtils.getFirstFrameData(
                         startTime,
@@ -156,9 +160,10 @@ class ScreenCaptureManager {
                     return null
                 }
 
-                override fun finished(fileName: String) {
-                    finishedMuxerTask.add(endTime)
+                override fun finished(filePath: String) {
+                    finishedMuxerTask[endTime] = filePath
                     isMuxer.set(false)
+                    callback.muxerFinished(filePath)
                     ThreadUtils.runOnMainThread {
                         ToastUtils.showLong("视频录制完成。")
                     }
@@ -174,7 +179,16 @@ class ScreenCaptureManager {
      * @param taskId 任务ID，结束时间戳
      */
     fun isFinishedMuxerTask(taskId: Long): Boolean {
-        return finishedMuxerTask.contains(taskId)
+        return finishedMuxerTask.containsKey(taskId)
+    }
+
+    /**
+     * Muxer视频任务是否结束
+     *
+     * @param taskId 任务ID，结束时间戳
+     */
+    fun getMuxerVideo(taskId: Long): String? {
+        return finishedMuxerTask[taskId]
     }
 
     /**
@@ -183,5 +197,14 @@ class ScreenCaptureManager {
     fun removeFinishedMuxerTask(taskId: Long) {
         finishedMuxerTask.remove(taskId)
         LogUtils.d(TAG, "removeFinishedMuxerTask finishedMuxerTask: $finishedMuxerTask")
+    }
+
+    interface Callback {
+        /**
+         * 视频muxer完成
+         *
+         * @param filePath 文件路径
+         */
+        fun muxerFinished(filePath: String)
     }
 }

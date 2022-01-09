@@ -109,10 +109,16 @@ class MainActivity : BaseActivity() {
     }
 
     fun startMuxer(view: android.view.View) {
-        val fileName = FileUtils.videoDir + DateUtils.nowTime.replace(" ", "_") +
-                BitmapUtils.VIDEO_FILE_EXT
         val curTime = System.currentTimeMillis()
-        ScreenCaptureManager.instance.startMuxer(fileName, curTime - 10 * 1000, curTime)
-        tipEt?.setText(fileName)
+        ScreenCaptureManager.instance.startMuxer(
+            curTime - 10 * 1000,
+            curTime,
+            object : ScreenCaptureManager.Callback {
+                override fun muxerFinished(filePath: String) {
+                    runOnUiThread {
+                        tipEt?.setText(filePath)
+                    }
+                }
+            })
     }
 }

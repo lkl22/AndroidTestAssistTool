@@ -34,6 +34,11 @@ class VideoMuxerThread(
     private var mOutputFileName = ""
     private var mTrackIndex = -1
 
+    /**
+     * 第一帧数据的时间戳 ms
+     */
+    private var mFirstFrameTimestamp: Long = -1
+
     override fun prepare() {
         // Create a MediaMuxer.  We can't add the video track and start() the muxer here,
         // because our MediaFormat doesn't have the Magic Goodies.  These can only be
@@ -64,6 +69,7 @@ class VideoMuxerThread(
             quit()
             return
         }
+        mFirstFrameTimestamp = frameData.timestamp
         writeSampleData(frameData)
     }
 
@@ -86,7 +92,7 @@ class VideoMuxerThread(
             )
             writeSampleData(mTrackIndex, sampleData, mBufferInfo)
             if (MediaConst.PRINT_DEBUG_LOG) {
-                LogUtils.d(TAG, "get frame data -> $frameData")
+                LogUtils.d(TAG, "writeSampleData frame data -> $frameData")
             }
         }
     }
@@ -100,7 +106,16 @@ class VideoMuxerThread(
 
     override fun release() {
         LogUtils.d(TAG, "release")
-        callback.finished(mOutputFileName)
+        if (mFirstFrameTimestamp > 0) {
+            val newFp = FileUtils.videoDir + DateUtils.convertDateToString(
+                DateUtils.DATE_TIME_MS_FN,
+                Date(mFirstFrameTimestamp)
+            ) + BitmapUtils.VIDEO_FILE_EXT
+            FileUtils.renameFile(mOutputFileName, newFp)
+            callback.finished(newFp)
+        } else {
+            callback.finished("")
+        }
         mMuxer?.release()
     }
 
@@ -122,8 +137,8 @@ class VideoMuxerThread(
         /**
          * 合成完成
          *
-         * @param fileName 文件名
+         * @param filePath 文件路径
          */
-        fun finished(fileName: String)
+        fun finished(filePath: String)
     }
 }

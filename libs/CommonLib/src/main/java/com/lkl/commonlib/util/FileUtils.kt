@@ -43,7 +43,7 @@ object FileUtils {
     @JvmStatic
     val isSDCardAvailable: Boolean
         get() = Environment.MEDIA_MOUNTED == Environment
-                .getExternalStorageState()
+            .getExternalStorageState()
 
     /**
      * 获取下载目录
@@ -129,7 +129,8 @@ object FileUtils {
     fun getDiskCacheDir(context: Context, uniqueName: String): String {
         var cachePath: String? = null
         if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
-                || !Environment.isExternalStorageRemovable()) {
+            || !Environment.isExternalStorageRemovable()
+        ) {
             val file = context.externalCacheDir
             if (null != file) {
                 cachePath = file.path
@@ -370,5 +371,18 @@ object FileUtils {
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
+    }
+
+    /**
+     * 重命名文件
+     *
+     * @param oldPath 原来的文件地址
+     * @param newPath 新的文件地址
+     */
+    fun renameFile(oldPath: String, newPath: String) {
+        val oldFile = File(oldPath)
+        val newFile = File(newPath)
+        //执行重命名
+        oldFile.renameTo(newFile)
     }
 }
