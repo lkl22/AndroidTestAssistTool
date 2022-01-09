@@ -1,24 +1,20 @@
 package com.lkl.commonlib.util
 
-import com.lkl.commonlib.util.LogUtils.i
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
+import android.content.Context
 import android.os.Build
 import android.util.DisplayMetrics
-import android.annotation.SuppressLint
-import android.content.Context
 import android.view.WindowManager
-import com.lkl.commonlib.util.DisplayUtils
-import com.lkl.commonlib.util.LogUtils
-import android.view.Display
-import java.lang.Exception
-import java.lang.StringBuilder
+import com.lkl.commonlib.BaseApplication
+import com.lkl.commonlib.util.LogUtils.i
 
 /**
  * Display工具类
  */
 object DisplayUtils {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    fun getDisplayMetrics(context: Context): DisplayMetrics {
+    fun getDisplayMetrics(context: Context=BaseApplication.context): DisplayMetrics {
         val dm = context.resources.displayMetrics
         @SuppressLint("WrongConstant") val windowManager =
             context.getSystemService("window") as WindowManager
@@ -41,42 +37,42 @@ object DisplayUtils {
         return dm
     }
 
-    fun dip2px(c: Context, dpValue: Float): Int {
+    fun dip2px(dpValue: Float, c: Context=BaseApplication.context): Int {
         val scale = getDisplayMetrics(c).density
         return (dpValue * scale + 0.5f).toInt()
     }
 
-    fun px2dip(c: Context, pxValue: Float): Int {
+    fun px2dip(pxValue: Float, c: Context=BaseApplication.context): Int {
         val scale = getDisplayMetrics(c).density
         return (pxValue / scale + 0.5f).toInt()
     }
 
-    fun px2sp(c: Context, pxValue: Float): Int {
+    fun px2sp(pxValue: Float, c: Context=BaseApplication.context): Int {
         val fontScale = getDisplayMetrics(c).scaledDensity
         return (pxValue / fontScale + 0.5f).toInt()
     }
 
-    fun sp2px(c: Context, spValue: Float): Int {
+    fun sp2px(spValue: Float, c: Context=BaseApplication.context): Int {
         val fontScale = getDisplayMetrics(c).scaledDensity
         return (spValue * fontScale + 0.5f).toInt()
     }
 
-    fun getScreenWidthPixels(c: Context): Int {
+    fun getScreenWidthPixels(c: Context=BaseApplication.context): Int {
         return getDisplayMetrics(c).widthPixels
     }
 
-    fun getScreenHeightPixels(c: Context): Int {
+    fun getScreenHeightPixels(c: Context=BaseApplication.context): Int {
         return getDisplayMetrics(c).heightPixels
     }
 
-    fun getDensityDpi(c: Context): Int {
+    fun getDensityDpi(c: Context=BaseApplication.context): Int {
         return getDisplayMetrics(c).densityDpi
     }
 
     @TargetApi(17)
-    fun getScreenRealH(context: Context): Int {
+    fun getScreenRealH(c: Context=BaseApplication.context): Int {
         @SuppressLint("WrongConstant") val winMgr =
-            context.getSystemService("window") as WindowManager
+            c.getSystemService("window") as WindowManager
         val display = winMgr.defaultDisplay
         val dm = DisplayMetrics()
         val h: Int

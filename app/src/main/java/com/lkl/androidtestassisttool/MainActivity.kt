@@ -39,7 +39,7 @@ class MainActivity : BaseActivity() {
             safeIntent.getIntExtra(ScreenCapture.KEY_CACHE_SIZE, ScreenCapture.DEFAULT_CACHE_SIZE)
         requestStoragePermission()
 
-        val mDisplayMetrics = DisplayUtils.getDisplayMetrics(BaseApplication.context)
+        val mDisplayMetrics = DisplayUtils.getDisplayMetrics()
         LogUtils.e(TAG, "${mDisplayMetrics.widthPixels} * ${mDisplayMetrics.heightPixels}")
     }
 

@@ -1,8 +1,11 @@
 package com.lkl.medialib.manager
 
 import android.media.MediaFormat
+import android.util.Size
+import com.lkl.commonlib.util.DisplayUtils
 import com.lkl.commonlib.util.LogUtils
 import com.lkl.medialib.bean.FrameData
+import com.lkl.medialib.bean.Position
 import com.lkl.medialib.constant.VideoProperty
 import com.lkl.medialib.core.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -103,28 +106,33 @@ class VideoAddTimestampManager {
     private fun startAddWatermarkVideo(mediaFormat: MediaFormat) {
         val colorFormat = mediaFormat.getInteger(MediaFormat.KEY_COLOR_FORMAT)
         mTimeWatermarkThread =
-            TimeWatermarkThread(mWidth, mHeight, colorFormat, object : CodecCallback {
-                override fun prepare() {
-                    startEncodeVideo(mMineType, mediaFormat)
-                }
-
-                override fun getFrameData(): FrameData? {
-                    val frameData = mDecodedDataQueue.poll()
-                    if (frameData == null && isDecodedFinished.get()) {
-                        LogUtils.e(TAG, "startAddWatermarkVideo add watermark finished.")
-                        mTimeWatermarkThread?.quit()
+            TimeWatermarkThread(
+                System.currentTimeMillis(),
+                Position(DisplayUtils.dip2px(8f), DisplayUtils.dip2px(48f)),
+                Size(mWidth, mHeight),
+                colorFormat,
+                object : CodecCallback {
+                    override fun prepare() {
+                        startEncodeVideo(mMineType, mediaFormat)
                     }
-                    return frameData
-                }
 
-                override fun putFrameData(frameData: FrameData) {
-                    addCacheFrameData(mWatermarkDataQueue, frameData)
-                }
+                    override fun getFrameData(): FrameData? {
+                        val frameData = mDecodedDataQueue.poll()
+                        if (frameData == null && isDecodedFinished.get()) {
+                            LogUtils.e(TAG, "startAddWatermarkVideo add watermark finished.")
+                            mTimeWatermarkThread?.quit()
+                        }
+                        return frameData
+                    }
 
-                override fun finished() {
-                    isWatermarkFinished.set(true)
-                }
-            })
+                    override fun putFrameData(frameData: FrameData) {
+                        addCacheFrameData(mWatermarkDataQueue, frameData)
+                    }
+
+                    override fun finished() {
+                        isWatermarkFinished.set(true)
+                    }
+                })
         mTimeWatermarkThread?.start()
     }
 

@@ -70,3 +70,15 @@ data class MediaFormatParams(
     var colorFormat: Int = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
 )
 
+/**
+ * 坐标信息
+ *
+ * @param x x坐标
+ * @param y y坐标
+ */
+data class Position(val x:Int, val y:Int) {
+    override fun toString(): String {
+        return "($x, $y)"
+    }
+}
+

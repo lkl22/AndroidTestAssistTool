@@ -1,9 +1,11 @@
 package com.lkl.medialib.core
 
+import android.util.Size
 import com.lkl.commonlib.util.BitmapUtils
 import com.lkl.commonlib.util.DateUtils
 import com.lkl.commonlib.util.LogUtils
 import com.lkl.medialib.bean.FrameData
+import com.lkl.medialib.bean.Position
 import com.lkl.yuvjni.YuvUtils
 import java.nio.ByteBuffer
 import java.util.*
@@ -15,8 +17,21 @@ import java.util.*
  * @since 2022/01/09
  */
 class TimeWatermarkThread(
-    private val width: Int,
-    private val height: Int,
+    /**
+     * 起始帧的时间戳
+     */
+    private val startTimestamp: Long,
+    /**
+     * 水印左上角的坐标
+     */
+    private val startPos: Position,
+    /**
+     * 原始图片的大小
+     */
+    private val size: Size,
+    /**
+     * 图片的编码格式
+     */
     private val colorFormat: Int,
     private val callback: CodecCallback,
     threadName: String = TAG
@@ -31,14 +46,16 @@ class TimeWatermarkThread(
     private lateinit var lastTimeWaterMarkYuv: ByteArray
 
     override fun prepare() {
-        LogUtils.e(TAG, "size: $width * $height colorFormat: $colorFormat")
+        LogUtils.e(TAG, "startPos $startPos size: $size colorFormat: $colorFormat")
         callback.prepare()
     }
 
     override fun drain() {
         val frameData = callback.getFrameData()
-        frameData?.apply {
-            nv21ToYuv420p(this)
+        if (frameData == null) {
+            waitTime(10)
+        } else {
+            nv21ToYuv420p(frameData)
         }
     }
 
@@ -52,14 +69,14 @@ class TimeWatermarkThread(
 
         // NV21数据添加时间水印
         YuvUtils.NV21AddWaterMark(
-            width - lastTimeWaterMarkWidth - lastTimeWaterMarkHeight,
-            height - 2 * lastTimeWaterMarkHeight,
+            startPos.x,
+            startPos.y,
             lastTimeWaterMarkYuv,
             lastTimeWaterMarkWidth,
             lastTimeWaterMarkHeight,
             frameData.data,
-            width,
-            height
+            size.width,
+            size.height
         )
 
         // 将NV21数据转为YUV420P（I420）
@@ -68,12 +85,15 @@ class TimeWatermarkThread(
     }
 
     private fun generateTimeWaterMarkBitmap(timestamp: Long) {
-        val time = DateUtils.convertDateToString(DateUtils.DATE_TIME_MS, Date(timestamp))
+        val time = DateUtils.convertDateToString(
+            DateUtils.DATE_TIME_MS,
+            Date(startTimestamp + timestamp)
+        )
         if (lastTimeWaterMark != time) {
             lastTimeWaterMark = time
             // 时间戳变动了，才需要重新生成新的水印数据
             // 生成时间水印图片
-            val bitmap = BitmapUtils.textAsBitmap(time, 30f)
+            val bitmap = BitmapUtils.textAsBitmap(time)
             lastTimeWaterMarkWidth = bitmap.width
             lastTimeWaterMarkHeight = bitmap.height
             // 获取argb byte 数组

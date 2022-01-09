@@ -35,7 +35,7 @@ class ScreenCaptureManager {
     private val mProjectionManager: MediaProjectionManager = BaseApplication.context
         .getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
-    private val mDisplayMetrics = DisplayUtils.getDisplayMetrics(BaseApplication.context)
+    private val mDisplayMetrics = DisplayUtils.getDisplayMetrics()
 
     /**
      * 录屏环境是否已就绪

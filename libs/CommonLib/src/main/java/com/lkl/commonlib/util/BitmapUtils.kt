@@ -88,7 +88,11 @@ object BitmapUtils {
      * @param bitmap 图片文件
      * @return null 保存失败 否则返回保存成功后的全路径
      */
-    fun saveBitmap(uri: String?, bitmap: Bitmap, compressFormat: String = IMAGE_FILE_EXT_PNG): String? {
+    fun saveBitmap(
+        uri: String?,
+        bitmap: Bitmap,
+        compressFormat: String = IMAGE_FILE_EXT_PNG
+    ): String? {
         if (uri.isNullOrEmpty()) {
             return null
         }
@@ -130,7 +134,11 @@ object BitmapUtils {
             baos.reset()//重置baos即清空baos
             options -= 10//每次都减少5
             if (compressFormat == IMAGE_FILE_EXT_PNG) {
-                image.compress(Bitmap.CompressFormat.PNG, options, baos)//这里压缩options%，把压缩后的数据存放到baos中
+                image.compress(
+                    Bitmap.CompressFormat.PNG,
+                    options,
+                    baos
+                )//这里压缩options%，把压缩后的数据存放到baos中
             } else {
                 image.compress(Bitmap.CompressFormat.JPEG, options, baos)
             }
@@ -142,8 +150,10 @@ object BitmapUtils {
         return BitmapFactory.decodeStream(isBm)
     }
 
-    fun calculateInSampleSize(options: BitmapFactory.Options,
-                              reqWidth: Int, reqHeight: Int): Int {
+    fun calculateInSampleSize(
+        options: BitmapFactory.Options,
+        reqWidth: Int, reqHeight: Int
+    ): Int {
         // 源图片的高度和宽度
         val height = options.outHeight
         val width = options.outWidth
@@ -174,29 +184,30 @@ object BitmapUtils {
         return BitmapFactory.decodeFile(uri, options)
     }
 
-    fun textAsBitmap(text: String, textSize: Float): Bitmap {
+    fun textAsBitmap(text: String, textSize: Float = 30f, textColor: Int = Color.RED): Bitmap {
         val textPaint = TextPaint()
-
-        textPaint.setARGB(0x31, 0x31, 0x31, 0)
         // 特别注意：使用的libyuv中ARGB对应的是这边的ABGR，即 BLUE转化为RED，red、blue色彩做对换
-//        textPaint.color = Color.WHITE
+        textPaint.color = textColor
         textPaint.isAntiAlias = true
         textPaint.textSize = textSize
         val length = textPaint.measureText(text).toInt()
 
-        val layout = StaticLayout(text, textPaint, length,
-                Layout.Alignment.ALIGN_NORMAL, 0.1f, 0.0f, true)
+        val layout = StaticLayout(
+            text, textPaint, length, Layout.Alignment.ALIGN_NORMAL,
+            0.1f, 0.0f, true
+        )
 
         // 保证图片的width、height 为偶数，否则 ARGB -> NV21 数据可能会导致数据失真
-        val bitmap = Bitmap.createBitmap((layout.width + 1) / 2 * 2,
-                (layout.height + 1) / 2 * 2, Bitmap.Config.ARGB_8888)
+        val bitmap = Bitmap.createBitmap(
+            (layout.width + 1) / 2 * 2,
+            (layout.height + 1) / 2 * 2, Bitmap.Config.ARGB_8888
+        )
 
         val canvas = Canvas(bitmap)
         canvas.translate(0f, 0f)
         // 设置透明背景
         canvas.drawColor(Color.TRANSPARENT)
         layout.draw(canvas)
-//        Log.d("textAsBitmap", String.format("1 : %d %d", bitmap.width, bitmap.height))
         return bitmap
     }
 }
