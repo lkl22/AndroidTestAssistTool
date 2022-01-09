@@ -11,6 +11,11 @@ import com.lkl.medialib.bean.FrameData
  */
 interface CodecCallback {
     /**
+     * 准备完成
+     */
+    fun prepare() {}
+
+    /**
      * 获取待编解码的数据帧
      */
     fun getFrameData(): FrameData?
@@ -18,7 +23,7 @@ interface CodecCallback {
     /**
      * MediaFormat Changed回调
      */
-    fun formatChanged(mediaFormat: MediaFormat)
+    fun formatChanged(mediaFormat: MediaFormat) {}
 
     /**
      * 将编解码出来的数据回调出去

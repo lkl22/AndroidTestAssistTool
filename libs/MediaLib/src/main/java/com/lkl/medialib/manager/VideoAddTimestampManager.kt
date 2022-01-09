@@ -29,12 +29,15 @@ class VideoAddTimestampManager {
         ConcurrentLinkedQueue<FrameData>()
     private val isExtractFinished = AtomicBoolean(false)
 
-
     private var mVideoDecoderThread: VideoDecoderThread? = null
     private val mDecodedDataQueue: ConcurrentLinkedQueue<FrameData> =
         ConcurrentLinkedQueue<FrameData>()
     private val isDecodedFinished = AtomicBoolean(false)
 
+    private var mTimeWatermarkThread: TimeWatermarkThread? = null
+    private val mWatermarkDataQueue: ConcurrentLinkedQueue<FrameData> =
+        ConcurrentLinkedQueue<FrameData>()
+    private val isWatermarkFinished = AtomicBoolean(false)
 
     private var mVideoEncoderThread: VideoEncoderThread? = null
     private val mEncodedDataQueue: ConcurrentLinkedQueue<FrameData> =
@@ -83,7 +86,7 @@ class VideoAddTimestampManager {
                 }
 
                 override fun formatChanged(mediaFormat: MediaFormat) {
-                    startEncodeVideo(mMineType, mediaFormat)
+                    startAddWatermarkVideo(mediaFormat)
                 }
 
                 override fun putFrameData(frameData: FrameData) {
@@ -97,12 +100,40 @@ class VideoAddTimestampManager {
         mVideoDecoderThread?.start()
     }
 
+    private fun startAddWatermarkVideo(mediaFormat: MediaFormat) {
+        val colorFormat = mediaFormat.getInteger(MediaFormat.KEY_COLOR_FORMAT)
+        mTimeWatermarkThread =
+            TimeWatermarkThread(mWidth, mHeight, colorFormat, object : CodecCallback {
+                override fun prepare() {
+                    startEncodeVideo(mMineType, mediaFormat)
+                }
+
+                override fun getFrameData(): FrameData? {
+                    val frameData = mDecodedDataQueue.poll()
+                    if (frameData == null && isDecodedFinished.get()) {
+                        LogUtils.e(TAG, "startAddWatermarkVideo add watermark finished.")
+                        mTimeWatermarkThread?.quit()
+                    }
+                    return frameData
+                }
+
+                override fun putFrameData(frameData: FrameData) {
+                    addCacheFrameData(mWatermarkDataQueue, frameData)
+                }
+
+                override fun finished() {
+                    isWatermarkFinished.set(true)
+                }
+            })
+        mTimeWatermarkThread?.start()
+    }
+
     private fun startEncodeVideo(mimeType: String, mediaFormat: MediaFormat) {
         mVideoEncoderThread =
             VideoEncoderThread(mimeType, mediaFormat, object : CodecCallback {
                 override fun getFrameData(): FrameData? {
-                    val frameData = mDecodedDataQueue.poll()
-                    if (frameData == null && isDecodedFinished.get()) {
+                    val frameData = mWatermarkDataQueue.poll()
+                    if (frameData == null && isWatermarkFinished.get()) {
                         LogUtils.e(TAG, "startEncodeVideo encode finished.")
                         mVideoEncoderThread?.quit()
                     }
@@ -155,7 +186,7 @@ class VideoAddTimestampManager {
         mVideoMuxerThread?.start()
     }
 
-    private fun addCacheFrameData(queue: ConcurrentLinkedQueue<FrameData>, frameData: FrameData){
+    private fun addCacheFrameData(queue: ConcurrentLinkedQueue<FrameData>, frameData: FrameData) {
         while (queue.size >= QUEUE_MAX_CACHE_SIZE) {
             Thread.sleep(10)
         }

@@ -20,6 +20,7 @@ object DateUtils {
 
     const val DATE = "yyyy-MM-dd"
     const val DATE_TIME = "yyyy-MM-dd HH:mm:ss"
+    const val DATE_TIME_MS = "yyyy-MM-dd HH:mm:ss.SSS"
     private const val DATE_YEAR = "yyyy"
     private const val DATE_MONTH = "MM"
     private const val DATE_DAY = "dd"
