@@ -8,6 +8,7 @@ import com.lkl.medialib.bean.FrameData
 import com.lkl.medialib.bean.Position
 import com.lkl.medialib.constant.VideoProperty
 import com.lkl.medialib.core.*
+import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -54,6 +55,8 @@ class VideoAddTimestampManager {
     }
 
     private fun startExtractVideo(videoFilePath: String) {
+        val file = File(videoFilePath).name
+        LogUtils.e(TAG, "file $file")
         VideoExtractorThread(videoFilePath, object : VideoExtractorThread.Callback {
             override fun preExtract(mimeType: String, mediaFormat: MediaFormat) {
                 mMineType = mimeType

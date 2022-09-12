@@ -3,6 +3,7 @@ package com.lkl.androidtestassisttool.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.lkl.androidtestassisttool.utils.PublicIPUtil
 import com.lkl.commonlib.util.*
 import com.lkl.medialib.manager.ScreenCaptureManager
 import java.util.*
@@ -22,10 +23,17 @@ class OperationReceiver : BroadcastReceiver() {
         private const val TYPE_GET_MUXER_VIDEO = "getMuxerVideo"
         private const val TYPE_RM_FINISHED_MUXER = "rmFinishedMuxer"
 
+        private const val TYPE_GET_PUBLIC_IP_ADDR = "getPublicIpAddr"
+
         private const val EXTRA_KEY_TIMESTAMP = "timestamp"
 
         // 视频总时长，默认30s
         private const val EXTRA_KEY_TOTAL_TIME = "totalTime"
+
+        // 是否清除缓存的pubic ip
+        private const val EXTRA_KEY_CLEAR_PUBLIC_IP = "clearPublicIp"
+
+        private var myPublicIp: String = ""
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -50,6 +58,15 @@ class OperationReceiver : BroadcastReceiver() {
             TYPE_RM_FINISHED_MUXER -> {
                 val timestamp = params.getLongExtra(EXTRA_KEY_TIMESTAMP, System.currentTimeMillis())
                 resData += ScreenCaptureManager.instance.removeFinishedMuxerTask(timestamp)
+            }
+
+            TYPE_GET_PUBLIC_IP_ADDR -> {
+                val clearPubicIp = params.getBooleanExtra(EXTRA_KEY_CLEAR_PUBLIC_IP, false)
+                if (clearPubicIp) {
+                    myPublicIp = ""
+                }
+                resData = myPublicIp
+                PublicIPUtil.getPublicIp { ip -> myPublicIp = ip }
             }
         }
         setResult(0, resData, null)

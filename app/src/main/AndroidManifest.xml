@@ -7,6 +7,8 @@
         android:allowBackup="true"
         android:icon="@mipmap/icon_launcher"
         android:label="@string/app_name"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/icon_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidTestAssistTool">
@@ -24,24 +26,30 @@
         </activity>
 
         <!-- Declares the input method service -->
-        <service android:name=".adbkeyboard.AdbIME"
-            android:label="@string/keyboard_name"
-            android:permission="android.permission.BIND_INPUT_METHOD"
+        <receiver
+            android:name=".receiver.OperationReceiver"
             android:exported="true">
+            <intent-filter>
+                <action android:name="OperationReceiver" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".adbkeyboard.AdbIME"
+            android:exported="true"
+            android:label="@string/keyboard_name"
+            android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
             </intent-filter>
-            <meta-data android:name="android.view.im" android:resource="@xml/methods" />
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/methods" />
         </service>
-
-        <receiver android:name=".receiver.OperationReceiver"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="OperationReceiver"/>
-            </intent-filter>
-        </receiver>
     </application>
+
     <instrumentation
         android:name=".MainInstrumentation"
         android:targetPackage="com.lkl.androidtestassisttool" />
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
